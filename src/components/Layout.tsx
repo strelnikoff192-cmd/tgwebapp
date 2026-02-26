@@ -20,7 +20,7 @@ export function Layout() {
 
   return (
     <div className="flex flex-col h-full min-h-screen bg-[var(--color-bg)]">
-      <main className="flex-1 overflow-auto pb-16 view-enter">
+      <main className="flex-1 overflow-auto pb-20 view-enter">
         <Page />
       </main>
       <BottomNav />

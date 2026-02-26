@@ -209,12 +209,12 @@ export function OrderPage() {
 
   if (orderSuccess) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center min-h-[60vh] text-center view-enter">
-        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
-          <CircleDollarSign className="text-green-400" size={32} />
+      <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-center view-enter">
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-emerald-500/20">
+          <CircleDollarSign className="text-emerald-400" size={40} />
         </div>
-        <h2 className="text-xl font-bold text-white mb-2">Заказ принят!</h2>
-        <p className="text-slate-400 mb-1">Стоимость: {totalPrice} ₽</p>
+        <h2 className="text-2xl font-bold text-white mb-2">Заказ принят!</h2>
+        <p className="text-[var(--color-accent)] font-semibold mb-1">{totalPrice} ₽</p>
         <p className="text-slate-500 text-sm">С вами свяжутся в ближайшее время</p>
       </div>
     );
@@ -232,35 +232,27 @@ export function OrderPage() {
           <div ref={mapRef} className="w-full h-full" />
         </div>
       )}
-      {/* Progress */}
-      <div className="flex items-center justify-center gap-1.5 mb-6">
+      {/* Progress — современный степпер */}
+      <div className="flex items-center gap-2 mb-6">
         {STEPS.map((s) => (
           <button
             key={s.id}
             type="button"
             onClick={() => s.id <= step && setStep(s.id)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              s.id === step
-                ? 'w-6 bg-[var(--color-accent)]'
-                : s.id < step
-                  ? 'w-2 bg-[var(--color-accent)]/60'
-                  : 'w-2 bg-slate-600'
-            }`}
+            className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+              s.id <= step ? 'bg-[var(--color-accent)]' : 'bg-white/10'
+            } ${s.id === step ? 'opacity-100' : s.id < step ? 'opacity-60' : ''}`}
             aria-label={s.title}
           />
         ))}
       </div>
-
-      <p className="text-slate-400 text-sm mb-4">{STEPS[step - 1].title}</p>
+      <p className="text-slate-400 text-sm font-medium mb-5">{STEPS[step - 1].title}</p>
 
       {/* Step 1: Маршрут */}
       {step === 1 && (
-        <div className="step-enter space-y-3">
+        <div className="step-enter space-y-4">
           <div className="relative">
-            <label className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <MapPin size={14} />
-              Откуда
-            </label>
+            <label className="mb-2 block text-sm font-medium text-slate-400">Откуда</label>
             <input
               type="text"
               value={fromAddress}
@@ -272,15 +264,15 @@ export function OrderPage() {
               onFocus={() => fromSuggests.length > 0 && setFromSuggestOpen(true)}
               onBlur={() => setTimeout(() => setFromSuggestOpen(false), 200)}
               placeholder="Адрес отправления"
-              className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-white placeholder-slate-500 focus:border-[var(--color-accent)] focus:outline-none transition-colors text-sm"
+              className="input"
             />
             {fromSuggestOpen && fromSuggests.length > 0 && (
-              <ul className="absolute z-10 top-full left-0 right-0 mt-1 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xl max-h-36 overflow-auto">
+              <ul className="card-solid absolute z-10 top-full left-0 right-0 mt-2 py-2 shadow-xl max-h-40 overflow-auto">
                 {fromSuggests.map((s) => (
                   <li key={s}>
                     <button
                       type="button"
-                      className="w-full px-4 py-2 text-left text-white hover:bg-white/5 text-sm"
+                      className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 text-sm transition-colors"
                       onMouseDown={() => {
                         setFromAddress(s);
                         setFromSuggests([]);
@@ -295,10 +287,7 @@ export function OrderPage() {
             )}
           </div>
           <div className="relative">
-            <label className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <MapPin size={14} />
-              Куда
-            </label>
+            <label className="mb-2 block text-sm font-medium text-slate-400">Куда</label>
             <input
               type="text"
               value={toAddress}
@@ -310,15 +299,15 @@ export function OrderPage() {
               onFocus={() => toSuggests.length > 0 && setToSuggestOpen(true)}
               onBlur={() => setTimeout(() => setToSuggestOpen(false), 200)}
               placeholder="Адрес назначения"
-              className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-white placeholder-slate-500 focus:border-[var(--color-accent)] focus:outline-none transition-colors text-sm"
+              className="input"
             />
             {toSuggestOpen && toSuggests.length > 0 && (
-              <ul className="absolute z-10 top-full left-0 right-0 mt-1 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xl max-h-36 overflow-auto">
+              <ul className="card-solid absolute z-10 top-full left-0 right-0 mt-2 py-2 shadow-xl max-h-40 overflow-auto">
                 {toSuggests.map((s) => (
                   <li key={s}>
                     <button
                       type="button"
-                      className="w-full px-4 py-2 text-left text-white hover:bg-white/5 text-sm"
+                      className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 text-sm transition-colors"
                       onMouseDown={() => {
                         setToAddress(s);
                         setToSuggests([]);
@@ -340,8 +329,8 @@ export function OrderPage() {
 
       {/* Step 2: Класс авто + цена */}
       {step === 2 && (
-        <div className="step-enter space-y-4">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="step-enter space-y-5">
+          <div className="grid grid-cols-2 gap-3">
             {TARIFFS.map((t) => {
               const isSelected = selectedTariff === t.id;
               const Icon = t.Icon;
@@ -350,26 +339,28 @@ export function OrderPage() {
                   key={t.id}
                   type="button"
                   onClick={() => { hapticFeedback.selectionChanged(); setSelectedTariff(t.id); }}
-                  className={`flex items-center gap-2 p-3 rounded-xl border transition-all ${
+                  className={`card-solid flex items-center gap-3 p-4 transition-all ${
                     isSelected
-                      ? 'bg-[var(--color-accent)]/20 border-[var(--color-accent)] text-[var(--color-accent)]'
-                      : 'bg-[var(--color-surface)] border-[var(--color-border)] text-slate-300 hover:border-slate-500'
+                      ? 'ring-2 ring-[var(--color-accent)] bg-[var(--color-accent-soft)]'
+                      : 'hover:bg-white/5'
                   }`}
                 >
-                  <Icon size={18} />
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isSelected ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]' : 'bg-white/5 text-slate-400'}`}>
+                    <Icon size={20} />
+                  </span>
                   <div className="text-left min-w-0">
-                    <div className="font-medium text-sm truncate">{t.name}</div>
-                    <div className="text-xs opacity-80">{t.pricePerKm} ₽/км</div>
+                    <div className={`font-semibold text-sm truncate ${isSelected ? 'text-[var(--color-accent)]' : 'text-slate-200'}`}>{t.name}</div>
+                    <div className="text-xs text-slate-500">{t.pricePerKm} ₽/км</div>
                   </div>
                 </button>
               );
             })}
           </div>
           {distanceKm != null && distanceKm > 0 ? (
-            <div className="p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+            <div className="card-solid p-5">
               <div className="flex justify-between items-baseline">
                 <span className="text-slate-400 text-sm">≈ {distanceKm} км</span>
-                <span className="text-xl font-bold text-[var(--color-accent)]">{totalPrice} ₽</span>
+                <span className="text-2xl font-bold text-[var(--color-accent)]">{totalPrice} ₽</span>
               </div>
             </div>
           ) : (
@@ -380,56 +371,44 @@ export function OrderPage() {
 
       {/* Step 3: Контакты */}
       {step === 3 && (
-        <div className="step-enter space-y-3">
+        <div className="step-enter space-y-4">
           <div>
-            <label className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <Calendar size={14} />
-              Когда
-            </label>
+            <label className="mb-2 block text-sm font-medium text-slate-400">Когда</label>
             <input
               type="datetime-local"
               value={dateTime}
               onChange={(e) => setDateTime(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-white focus:border-[var(--color-accent)] focus:outline-none text-sm"
+              className="input"
             />
           </div>
           <div>
-            <label className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <User size={14} />
-              Имя
-            </label>
+            <label className="mb-2 block text-sm font-medium text-slate-400">Имя</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ваше имя"
-              className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-white placeholder-slate-500 focus:border-[var(--color-accent)] focus:outline-none text-sm"
+              className="input"
             />
           </div>
           <div>
-            <label className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <Phone size={14} />
-              Телефон
-            </label>
+            <label className="mb-2 block text-sm font-medium text-slate-400">Телефон</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+7 (999) 123-45-67"
-              className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-white placeholder-slate-500 focus:border-[var(--color-accent)] focus:outline-none text-sm"
+              className="input"
             />
           </div>
           <div>
-            <label className="flex items-center gap-2 text-slate-400 text-sm mb-1">
-              <MessageSquare size={14} />
-              Комментарий
-            </label>
+            <label className="mb-2 block text-sm font-medium text-slate-400">Комментарий</label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Пожелания к поездке"
               rows={2}
-              className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] text-white placeholder-slate-500 focus:border-[var(--color-accent)] focus:outline-none resize-none text-sm"
+              className="input resize-none"
             />
           </div>
         </div>
@@ -438,18 +417,18 @@ export function OrderPage() {
       {/* Step 4: Подтверждение */}
       {step === 4 && (
         <div className="step-enter">
-          <div className="space-y-3 p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+          <div className="card-solid space-y-4 p-5">
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Маршрут</span>
               <span className="text-white text-right max-w-[60%] truncate">{fromAddress} → {toAddress}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Класс</span>
-              <span className="text-white">{tariff.name}</span>
+              <span className="text-white font-medium">{tariff.name}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Стоимость</span>
-              <span className="text-[var(--color-accent)] font-semibold">{totalPrice} ₽</span>
+              <span className="text-[var(--color-accent)] font-bold">{totalPrice} ₽</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Имя</span>
@@ -460,23 +439,23 @@ export function OrderPage() {
               <span className="text-white">{phone}</span>
             </div>
             {comment.trim() && (
-              <div className="flex justify-between text-sm pt-1 border-t border-[var(--color-border)]">
+              <div className="flex justify-between text-sm pt-3 border-t border-[var(--color-border)]">
                 <span className="text-slate-400">Комментарий</span>
                 <span className="text-white text-right max-w-[60%]">{comment}</span>
               </div>
             )}
           </div>
-          <p className="text-slate-500 text-xs mt-3 text-center">Нажмите «Заказать» внизу экрана</p>
+          <p className="text-slate-500 text-xs mt-4 text-center">Нажмите «Заказать» внизу экрана</p>
         </div>
       )}
 
       {/* Навигация: Назад / Далее */}
-      <div className="fixed bottom-16 left-0 right-0 px-4 flex items-center justify-between gap-3 safe-area-pb">
+      <div className="fixed bottom-20 left-0 right-0 px-4 flex items-center justify-between gap-3 safe-area-pb">
         <button
           type="button"
           onClick={goBack}
           disabled={step === 1}
-          className="flex items-center gap-1 py-3 px-4 rounded-xl border border-[var(--color-border)] text-slate-400 disabled:opacity-40 disabled:pointer-events-none hover:bg-white/5 transition-colors"
+          className="btn-secondary flex items-center gap-1.5 py-3.5 px-4 disabled:opacity-40 disabled:pointer-events-none"
         >
           <ChevronLeft size={20} />
           Назад
@@ -490,7 +469,7 @@ export function OrderPage() {
               (step === 2 && !canNextStep2) ||
               (step === 3 && !canNextStep3)
             }
-            className="flex-1 flex items-center justify-center gap-1 py-3 px-4 rounded-xl bg-[var(--color-accent)] text-white font-medium disabled:opacity-50 disabled:pointer-events-none hover:opacity-95 transition-opacity"
+            className="btn-primary flex-1 flex items-center justify-center gap-1.5 py-3.5 px-4"
           >
             Далее
             <ChevronRight size={20} />

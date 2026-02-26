@@ -7,30 +7,27 @@ const MOCK_TRIPS = [
 
 export function TripsPage() {
   return (
-    <div className="p-4 pb-8 view-enter">
-      <h2 className="text-xl font-bold text-white mb-4">Поездки</h2>
-      <div className="space-y-3">
+    <div className="p-5 pb-10 view-enter">
+      <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Поездки</h2>
+      <div className="space-y-4">
         {MOCK_TRIPS.map((trip) => (
-          <div
-            key={trip.id}
-            className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]"
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex gap-2 text-slate-300 text-sm">
-                <MapPin size={14} className="shrink-0 mt-0.5" />
-                <span>{trip.from} → {trip.to}</span>
+          <div key={trip.id} className="card-solid p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex gap-2 text-slate-200 text-sm min-w-0">
+                <MapPin size={18} className="shrink-0 mt-0.5 text-slate-400" />
+                <span className="truncate">{trip.from} → {trip.to}</span>
               </div>
-              <span className="text-[var(--color-accent)] font-semibold shrink-0">{trip.price} ₽</span>
+              <span className="text-[var(--color-accent)] font-bold shrink-0">{trip.price} ₽</span>
             </div>
-            <div className="flex items-center gap-1 text-slate-500 text-xs">
-              <Clock size={12} />
+            <div className="flex items-center gap-2 text-slate-500 text-xs">
+              <Clock size={14} />
               {trip.date}, {trip.time}
             </div>
           </div>
         ))}
       </div>
       {MOCK_TRIPS.length === 0 && (
-        <p className="text-slate-500 text-center py-8">Пока нет поездок</p>
+        <p className="text-slate-500 text-center py-12">Пока нет поездок</p>
       )}
     </div>
   );

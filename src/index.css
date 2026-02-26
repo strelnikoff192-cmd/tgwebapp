@@ -1,10 +1,16 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-bg: #0A1428;
-  --color-accent: #FF6B00;
-  --color-surface: #0f1a32;
-  --color-border: rgba(255, 107, 0, 0.25);
+  /* Современная тёмная палитра */
+  --color-bg: #0c1222;
+  --color-bg-elevated: #111827;
+  --color-surface: rgba(17, 24, 39, 0.85);
+  --color-surface-solid: #151d32;
+  --color-accent: #f97316;
+  --color-accent-soft: rgba(249, 115, 22, 0.15);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.12);
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
 }
 
 .safe-area-pb {
@@ -23,8 +29,9 @@ html, body, #root {
 
 body {
   background: var(--color-bg);
-  color: #e2e8f0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #f1f5f9;
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "ss02";
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -33,15 +40,63 @@ input, select, textarea {
   font-size: max(16px, 1rem);
 }
 
+/* Карточка в современном стиле (стекло + скругление) */
+.card {
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  border: 1px solid var(--color-border);
+}
+
+.card-solid {
+  background: var(--color-surface-solid);
+  border-radius: 1rem;
+  border: 1px solid var(--color-border);
+}
+
+/* Поле ввода */
+.input {
+  @apply w-full rounded-xl border bg-[var(--color-surface-solid)] px-4 py-3.5 text-white placeholder-slate-500 transition-colors;
+  border-color: var(--color-border);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+/* Кнопка основная */
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl font-semibold text-white transition-all active:scale-[0.98];
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Кнопка вторичная */
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border font-medium transition-colors;
+  border-color: var(--color-border-strong);
+  color: #94a3b8;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
 /* Smooth transitions for tabs and panels */
 .view-enter {
-  animation: viewEnter 0.25s ease-out;
+  animation: viewEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes viewEnter {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -50,13 +105,13 @@ input, select, textarea {
 }
 
 .step-enter {
-  animation: stepEnter 0.3s ease-out;
+  animation: stepEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes stepEnter {
   from {
     opacity: 0;
-    transform: translateX(12px);
+    transform: translateX(16px);
   }
   to {
     opacity: 1;

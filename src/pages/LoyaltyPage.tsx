@@ -28,23 +28,23 @@ export function LoyaltyPage() {
   }, []);
 
   return (
-    <div className="p-4 pb-8 view-enter">
-      <h2 className="text-xl font-bold text-white mb-4">Лояльность</h2>
+    <div className="p-5 pb-10 view-enter">
+      <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Лояльность</h2>
 
-      <div className="mb-6 p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-slate-400">Ваши баллы</span>
-          <span className="text-2xl font-bold text-[var(--color-accent)] flex items-center gap-1">
-            <Star size={24} fill="currentColor" />
+      <div className="card-solid mb-6 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-slate-400 text-sm font-medium">Ваши баллы</span>
+          <span className="text-2xl font-bold text-[var(--color-accent)] flex items-center gap-2">
+            <Star size={26} fill="currentColor" />
             {POINTS.toLocaleString('ru-RU')}
           </span>
         </div>
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs text-slate-500">
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-slate-500 font-medium">
             <span>{LEVELS[CURRENT_LEVEL]?.name ?? 'Gold'}</span>
             {NEXT_LEVEL && <span>{NEXT_LEVEL.name}</span>}
           </div>
-          <div className="h-2 rounded-full bg-slate-700 overflow-hidden">
+          <div className="h-2.5 rounded-full bg-white/10 overflow-hidden">
             <div
               className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-500"
               style={{ width: `${PROGRESS}%` }}
@@ -53,10 +53,10 @@ export function LoyaltyPage() {
         </div>
       </div>
 
-      <div className="mb-6 p-6 rounded-2xl bg-gradient-to-br from-[var(--color-accent)]/20 to-[var(--color-bg)] border border-[var(--color-border)] text-center">
-        <p className="text-slate-400 text-sm mb-2">Виртуальная карта</p>
-        <div className="w-32 h-20 mx-auto mb-3 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center">
-          <div className="w-16 h-16 bg-white rounded" title="QR" />
+      <div className="card-solid mb-6 p-6 text-center border-[var(--color-accent)]/20 bg-gradient-to-br from-[var(--color-accent)]/10 to-transparent">
+        <p className="text-slate-400 text-sm font-medium mb-3">Виртуальная карта</p>
+        <div className="w-36 h-24 mx-auto mb-4 rounded-xl bg-white/5 border border-[var(--color-border)] flex items-center justify-center">
+          <div className="w-20 h-20 bg-white/10 rounded-lg" title="QR" />
         </div>
         <p className="text-xs text-slate-500">Предъявите карту при поездке</p>
       </div>
@@ -64,19 +64,19 @@ export function LoyaltyPage() {
       <button
         type="button"
         onClick={copyCode}
-        className="w-full py-4 rounded-2xl bg-[var(--color-accent)] text-white font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+        className="btn-primary w-full py-4 rounded-2xl flex items-center justify-center gap-3"
       >
-        <Gift size={20} />
+        <Gift size={22} />
         Пригласить друга +500 баллов
       </button>
-      <p className="text-center text-slate-500 text-sm mt-2">
+      <p className="text-center text-slate-500 text-sm mt-4">
         Код: {inviteCode}
         <button
           type="button"
           onClick={copyCode}
-          className="ml-2 inline-flex items-center gap-1 text-[var(--color-accent)]"
+          className="ml-2 inline-flex items-center gap-1.5 text-[var(--color-accent)] font-medium"
         >
-          <Copy size={14} />
+          <Copy size={16} />
         </button>
       </p>
     </div>
