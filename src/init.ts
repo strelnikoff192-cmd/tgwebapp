@@ -9,6 +9,7 @@ import {
   emitEvent,
   miniApp,
   backButton,
+  mainButton,
 } from '@tma.js/sdk-react';
 
 type ThemeParamsPartial = Record<string, `#${string}` | undefined>;
@@ -58,8 +59,9 @@ export async function init(options: {
     });
   }
 
-  // Mount all components used in the project.
+  // Mount all components used in the project (must be before any component uses them).
   backButton.mount.ifAvailable();
+  mainButton.mount.ifAvailable();
   initData.restore();
 
   if (miniApp.mount.isAvailable()) {
