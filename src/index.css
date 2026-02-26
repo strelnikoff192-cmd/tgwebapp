@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #0A1428;
+  --color-accent: #FF6B00;
+  --color-surface: #0f1a32;
+  --color-border: rgba(255, 107, 0, 0.25);
+}
+
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: #e2e8f0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth transitions for tabs and panels */
+.view-enter {
+  animation: viewEnter 0.25s ease-out;
+}
+
+@keyframes viewEnter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
