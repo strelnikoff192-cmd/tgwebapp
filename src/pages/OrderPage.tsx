@@ -27,7 +27,7 @@ export function OrderPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const suggestTimeoutRef = useRef<ReturnType<typeof setTimeout>>(0);
   const handleMainButtonRef = useRef<() => void>(() => {});
@@ -123,10 +123,10 @@ export function OrderPage() {
       return;
     }
     mainButton.disable();
-    mainButton.showProgress();
+    mainButton.showLoader();
     setIsSubmitting(true);
     setTimeout(() => {
-      mainButton.hideProgress();
+      mainButton.hideLoader();
       mainButton.enable();
       setIsSubmitting(false);
       setOrderSuccess(true);
@@ -138,7 +138,7 @@ export function OrderPage() {
   handleMainButtonRef.current = handleMainButton;
 
   useEffect(() => {
-    const off = mainButton.on('click', () => handleMainButtonRef.current());
+    const off = mainButton.onClick(() => handleMainButtonRef.current());
     return () => off();
   }, []);
 

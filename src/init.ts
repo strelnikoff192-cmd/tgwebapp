@@ -5,12 +5,13 @@ import {
   viewport,
   init as initSDK,
   mockTelegramEnv,
-  type ThemeParams,
   retrieveLaunchParams,
   emitEvent,
   miniApp,
   backButton,
 } from '@tma.js/sdk-react';
+
+type ThemeParamsPartial = Record<string, `#${string}` | undefined>;
 
 /**
  * Initializes the application and configures its dependencies.
@@ -38,12 +39,12 @@ export async function init(options: {
     mockTelegramEnv({
       onEvent(event, next) {
         if (event.name === 'web_app_request_theme') {
-          let tp: ThemeParams = {};
+          let tp: ThemeParamsPartial = {};
           if (firstThemeSent) {
-            tp = themeParams.state();
+            tp = themeParams.state() as ThemeParamsPartial;
           } else {
             firstThemeSent = true;
-            tp ||= retrieveLaunchParams().tgWebAppThemeParams;
+            tp = retrieveLaunchParams().tgWebAppThemeParams as ThemeParamsPartial ?? tp;
           }
           return emitEvent('theme_changed', { theme_params: tp });
         }
@@ -65,7 +66,6 @@ export async function init(options: {
     themeParams.mount();
     miniApp.mount();
     themeParams.bindCssVars();
-    miniApp.expand();
     miniApp.ready();
   }
 
