@@ -39,7 +39,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full min-h-[100dvh]">
+    <div className="flex flex-col h-full min-h-0">
       <header className="shrink-0 flex items-center justify-between px-4 py-3 bg-[var(--color-bg)] border-b border-[var(--color-border)]">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
@@ -59,7 +59,7 @@ export function HomePage() {
         </div>
       </header>
 
-      <div className="flex-1 relative min-h-[300px]">
+      <div className="flex-1 min-h-[200px] relative">
         <div ref={mapRef} className="absolute inset-0 w-full h-full" />
         {!hasYandexMapsKey() && (
           <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-surface)]">

@@ -28,6 +28,11 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
+/* Убирает автозум при фокусе на полях ввода на iOS */
+input, select, textarea {
+  font-size: max(16px, 1rem);
+}
+
 /* Smooth transitions for tabs and panels */
 .view-enter {
   animation: viewEnter 0.25s ease-out;
