@@ -5,13 +5,8 @@ import {
   Truck,
   Briefcase,
   CircleDollarSign,
-  MapPin,
   ChevronRight,
   ChevronLeft,
-  Calendar,
-  User,
-  Phone,
-  MessageSquare,
 } from 'lucide-react';
 
 import { loadYandexMaps, hasYandexMapsKey } from '@/lib/yandexMaps';
