@@ -1,6 +1,7 @@
 import { Star, Gift, Copy } from 'lucide-react';
 import { useCallback } from 'react';
 import { hapticFeedback } from '@tma.js/sdk-react';
+import { UserCard } from '@/components/UserCard';
 
 const LEVELS = [
   { name: 'Bronze', min: 0, color: '#cd7f32' },
@@ -30,6 +31,11 @@ export function LoyaltyPage() {
   return (
     <div className="p-5 pb-10 view-enter">
       <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Лояльность</h2>
+
+      <div className="mb-5">
+        <UserCard variant="compact" />
+      </div>
+      <p className="text-slate-400 text-sm mb-4">Баллы и уровень привязаны к вашему профилю в Telegram.</p>
 
       <div className="card-solid mb-6 p-5">
         <div className="flex items-center justify-between mb-4">

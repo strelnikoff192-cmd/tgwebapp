@@ -1,4 +1,5 @@
 import { Clock, MapPin } from 'lucide-react';
+import { UserCard } from '@/components/UserCard';
 
 const MOCK_TRIPS = [
   { id: '1', from: 'ул. Тверская, 1', to: 'Шереметьево', date: '25 фев 2025', time: '14:30', price: 1250, status: 'completed' },
@@ -9,6 +10,12 @@ export function TripsPage() {
   return (
     <div className="p-5 pb-10 view-enter">
       <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Поездки</h2>
+
+      <div className="mb-5">
+        <UserCard variant="compact" />
+      </div>
+      <p className="text-slate-400 text-sm mb-4">История поездок по вашему аккаунту Telegram.</p>
+
       <div className="space-y-4">
         {MOCK_TRIPS.map((trip) => (
           <div key={trip.id} className="card-solid p-5">
