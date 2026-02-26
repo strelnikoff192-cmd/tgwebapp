@@ -48,6 +48,20 @@ Before you start, make sure you have already created a Telegram Bot. Here is
 a [comprehensive guide](https://docs.telegram-mini-apps.com/platform/creating-new-app)
 on how to do it.
 
+### Как связать бота с приложением (Такси Глобус)
+
+1. **Создайте бота** в [@BotFather](https://t.me/BotFather): команда `/newbot`, введите имя и username (например `@Taxiglobus_bot`).
+
+2. **Укажите URL Mini App** в BotFather:
+   - `/mybots` → выберите бота → **Bot Settings** → **Menu Button** (или **Configure inline menu**).
+   - Либо: **Web App** → укажите URL вашего приложения, например:
+     - `https://globus-taxi.vercel.app` (если задеплоили на Vercel),
+     - или ваш домен после деплоя.
+
+3. **Кнопка меню**: в настройках бота можно задать **Menu Button** → **Configure menu button** → URL = тот же URL приложения. Тогда при открытии бота пользователь увидит кнопку запуска приложения.
+
+4. **Проверка**: откройте бота в Telegram и нажмите кнопку меню или команду — должно открыться приложение. В приложении в разделе «Профиль» отобразятся имя и фото из Telegram, в заказе подставится имя.
+
 ## Run
 
 Although Mini Apps are designed to be opened

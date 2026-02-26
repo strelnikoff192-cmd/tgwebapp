@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { mainButton, hapticFeedback } from '@tma.js/sdk-react';
+import { mainButton, hapticFeedback, initData } from '@tma.js/sdk-react';
 import {
   Car,
   Truck,
@@ -69,6 +69,15 @@ export function OrderPage() {
   const tariff = TARIFFS.find((t) => t.id === selectedTariff)!;
   const totalPrice =
     distanceKm != null && distanceKm > 0 ? Math.round(distanceKm * tariff.pricePerKm) : null;
+
+  // Подстановка имени из Telegram при открытии заказа
+  useEffect(() => {
+    const user = initData.state()?.user;
+    if (!user) return;
+    setName((prev) =>
+      prev.trim() ? prev : [user.first_name, user.last_name].filter(Boolean).join(' ').trim()
+    );
+  }, []);
 
   const canNextStep1 = fromAddress.trim().length > 0 && toAddress.trim().length > 0;
   const canNextStep2 = true; // класс авто всегда выбран, переход без обязательного расчёта цены
