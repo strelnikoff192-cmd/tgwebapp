@@ -74,10 +74,10 @@ export function HomePage() {
         <button
           type="button"
           onClick={() => setActiveTab('order')}
-          className="w-full py-4 rounded-2xl bg-[var(--color-accent)] text-white font-bold text-lg shadow-lg shadow-orange-500/25 active:scale-[0.98] transition-transform duration-150 flex items-center justify-center gap-2"
+          className="w-full py-4 px-5 rounded-2xl bg-[var(--color-accent)] text-white font-bold text-lg shadow-lg shadow-orange-500/25 active:scale-[0.98] transition-transform duration-150 flex items-center justify-center gap-2 min-h-[56px]"
         >
-          <MapPin size={22} />
-          Построить маршрут
+          <MapPin size={22} className="shrink-0" />
+          <span className="truncate">Построить маршрут</span>
         </button>
       </div>
     </div>

@@ -222,14 +222,15 @@ export function OrderPage() {
 
   return (
     <div className="p-4 pb-24 view-enter">
-      {/* Скрытая карта для расчёта маршрута (как на сайте) */}
+      {/* Скрытая карта для расчёта маршрута — вынесена за экран, чтобы кнопка «В Карты» не отображалась */}
       {hasYandexMapsKey() && (
         <div
-          ref={mapRef}
-          className="sr-only"
-          style={{ width: 2, height: 2 }}
+          className="fixed overflow-hidden"
+          style={{ left: -9999, top: 0, width: 400, height: 400, zIndex: -1 }}
           aria-hidden="true"
-        />
+        >
+          <div ref={mapRef} className="w-full h-full" />
+        </div>
       )}
       {/* Progress */}
       <div className="flex items-center justify-center gap-1.5 mb-6">
