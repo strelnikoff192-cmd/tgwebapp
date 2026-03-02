@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type ChangeEvent } from 'react';
 import { mainButton, hapticFeedback, initData } from '@tma.js/sdk-react';
 import {
   Car,
@@ -31,6 +31,20 @@ const TARIFFS = [
 type TariffId = (typeof TARIFFS)[number]['id'];
 
 const MAX_STEP = 4;
+
+function formatPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '').replace(/^7/, '');
+  const d = digits.slice(0, 10);
+  if (d.length === 0) return '';
+  if (d.length <= 3) return `+7 (${d}`;
+  if (d.length <= 6) return `+7 (${d.slice(0, 3)}) ${d.slice(3)}`;
+  if (d.length <= 8) return `+7 (${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+  return `+7 (${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6, 8)}-${d.slice(8)}`;
+}
+
+function rawPhone(formatted: string): string {
+  return '+7' + formatted.replace(/\D/g, '').replace(/^7/, '').slice(0, 10);
+}
 
 interface YandexRoutePanel {
   routePanel: {
@@ -196,7 +210,7 @@ export function OrderPage() {
       price: totalPrice,
       km: distanceKm ?? 0,
       name,
-      phone,
+      phone: rawPhone(phone),
       comment,
       tripDate: tripDateVal,
       tripTime: tripTimeVal,
@@ -386,7 +400,7 @@ export function OrderPage() {
           {distanceKm != null && distanceKm > 0 ? (
             <div className="card-glow p-5">
               <div className="flex justify-between items-baseline">
-                <span className="text-slate-400 text-sm">≈ {distanceKm} км</span>
+                <span className="text-slate-400 text-sm">≈ {distanceKm} км × {tariff.pricePerKm} ₽</span>
                 <div className="text-right">
                   <span className="text-2xl font-black" style={{ color: '#00e5ff', textShadow: '0 0 10px rgba(0,229,255,0.3)' }}>{totalPrice} ₽</span>
                   {totalDiscount > 0 && rawPrice && (
@@ -414,7 +428,7 @@ export function OrderPage() {
           </div>
           <div>
             <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Телефон</label>
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" className="input" />
+            <input type="tel" value={phone} onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(formatPhone(e.target.value))} placeholder="(999) 123-45-67" className="input" />
           </div>
           <div>
             <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Комментарий</label>
