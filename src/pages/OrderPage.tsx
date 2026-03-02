@@ -22,7 +22,7 @@ const STEPS = [
 ] as const;
 
 const TARIFFS = [
-  { id: 'economy', name: 'Эконом', pricePerKm: 30, Icon: Car, desc: 'Доступно' },
+  { id: 'econom', name: 'Эконом', pricePerKm: 30, Icon: Car, desc: 'Доступно' },
   { id: 'comfort', name: 'Комфорт', pricePerKm: 35, Icon: Car, desc: 'Удобно' },
   { id: 'minivan', name: 'Минивэн', pricePerKm: 50, Icon: Truck, desc: '6+ мест' },
   { id: 'business', name: 'Бизнес', pricePerKm: 55, Icon: Briefcase, desc: 'Премиум' },
@@ -206,7 +206,7 @@ export function OrderPage() {
     const orderData = {
       from: fromAddress,
       to: toAddress,
-      carClass: tariff.name,
+      carClass: tariff.id,
       price: totalPrice,
       km: distanceKm ?? 0,
       name,
