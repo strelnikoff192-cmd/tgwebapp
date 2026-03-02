@@ -7,9 +7,12 @@ import {
   CircleDollarSign,
   ChevronRight,
   ChevronLeft,
+  Sparkles,
 } from 'lucide-react';
 
 import { loadYandexMaps, hasYandexMapsKey } from '@/lib/yandexMaps';
+import { useReferralStore } from '@/store/referralStore';
+import { useTripsStore } from '@/store/tripsStore';
 
 const STEPS = [
   { id: 1, title: 'Маршрут', short: 'Адреса' },
@@ -19,10 +22,10 @@ const STEPS = [
 ] as const;
 
 const TARIFFS = [
-  { id: 'economy', name: 'Эконом', pricePerKm: 30, Icon: Car },
-  { id: 'comfort', name: 'Комфорт', pricePerKm: 35, Icon: Car },
-  { id: 'minivan', name: 'Минивэн', pricePerKm: 50, Icon: Truck },
-  { id: 'business', name: 'Бизнес', pricePerKm: 55, Icon: Briefcase },
+  { id: 'economy', name: 'Эконом', pricePerKm: 30, Icon: Car, desc: 'Доступно' },
+  { id: 'comfort', name: 'Комфорт', pricePerKm: 35, Icon: Car, desc: 'Удобно' },
+  { id: 'minivan', name: 'Минивэн', pricePerKm: 50, Icon: Truck, desc: '6+ мест' },
+  { id: 'business', name: 'Бизнес', pricePerKm: 55, Icon: Briefcase, desc: 'Премиум' },
 ] as const;
 
 type TariffId = (typeof TARIFFS)[number]['id'];
@@ -67,10 +70,18 @@ export function OrderPage() {
   toAddressRef.current = toAddress;
 
   const tariff = TARIFFS.find((t) => t.id === selectedTariff)!;
-  const totalPrice =
-    distanceKm != null && distanceKm > 0 ? Math.round(distanceKm * tariff.pricePerKm) : null;
+  const referralDiscount = useReferralStore((s) => s.getCurrentDiscount());
+  const firstRideDiscount = useReferralStore((s) => s.getFirstRideDiscount());
+  const totalDiscount = Math.max(referralDiscount, firstRideDiscount);
 
-  // Подстановка имени из Telegram при открытии заказа
+  const rawPrice =
+    distanceKm != null && distanceKm > 0 ? Math.round(distanceKm * tariff.pricePerKm) : null;
+  const totalPrice = rawPrice != null && totalDiscount > 0
+    ? Math.round(rawPrice * (1 - totalDiscount / 100))
+    : rawPrice;
+
+  const addTrip = useTripsStore((s) => s.addTrip);
+
   useEffect(() => {
     const user = initData.state()?.user;
     if (!user) return;
@@ -80,13 +91,12 @@ export function OrderPage() {
   }, []);
 
   const canNextStep1 = fromAddress.trim().length > 0 && toAddress.trim().length > 0;
-  const canNextStep2 = true; // класс авто всегда выбран, переход без обязательного расчёта цены
+  const canNextStep2 = true;
   const canNextStep3 = name.trim().length > 0 && phone.trim().length > 0;
   const canSubmit =
     canNextStep1 && canNextStep2 && canNextStep3 &&
     fromAddress.trim() && toAddress.trim() && totalPrice != null && totalPrice > 0 && name.trim() && phone.trim();
 
-  // Скрытая карта с routePanelControl — как на сайте globus3213934
   useEffect(() => {
     if (!hasYandexMapsKey() || !mapRef.current || mapInitedRef.current) return;
     mapInitedRef.current = true;
@@ -106,11 +116,7 @@ export function OrderPage() {
         });
         const routePanel = map.controls.get('routePanelControl') as YandexRoutePanel;
         routePanelRef.current = routePanel;
-        routePanel.routePanel.state.set({
-          type: 'auto',
-          fromEnabled: true,
-          toEnabled: true,
-        });
+        routePanel.routePanel.state.set({ type: 'auto', fromEnabled: true, toEnabled: true });
         routePanel.routePanel.getRouteAsync().then((multiRoute: YandexMultiRoute) => {
           multiRoute.model.events.add('requestsuccess', () => {
             const active = multiRoute.getActiveRoute();
@@ -127,32 +133,21 @@ export function OrderPage() {
         if (fromInit && toInit) routePanel.routePanel.state.set({ type: 'auto', from: fromInit, to: toInit });
       });
     });
-    return () => {
-      mapInitedRef.current = false;
-    };
+    return () => { mapInitedRef.current = false; };
   }, []);
 
-  // Обновление маршрута при смене адресов (как на сайте: state.set({ from, to }))
   useEffect(() => {
     const from = fromAddress.trim();
     const to = toAddress.trim();
-    if (!from || !to) {
-      setDistanceKm(null);
-      return;
-    }
+    if (!from || !to) { setDistanceKm(null); return; }
     const panel = routePanelRef.current;
     if (!panel) return;
-    const t = setTimeout(() => {
-      panel.routePanel.state.set({ type: 'auto', from, to });
-    }, 300);
+    const t = setTimeout(() => { panel.routePanel.state.set({ type: 'auto', from, to }); }, 300);
     return () => clearTimeout(t);
   }, [fromAddress, toAddress]);
 
   const fetchSuggest = (query: string, setSuggest: (s: string[]) => void) => {
-    if (!query.trim()) {
-      setSuggest([]);
-      return;
-    }
+    if (!query.trim()) { setSuggest([]); return; }
     clearTimeout(suggestTimeoutRef.current);
     suggestTimeoutRef.current = setTimeout(() => {
       loadYandexMaps().then(() => {
@@ -174,12 +169,7 @@ export function OrderPage() {
   }, [step]);
 
   useEffect(() => {
-    if (step < MAX_STEP) {
-      mainButton.hide();
-    } else {
-      mainButton.setText('Заказать');
-      mainButton.show();
-    }
+    if (step < MAX_STEP) { mainButton.hide(); } else { mainButton.setText('Заказать'); mainButton.show(); }
     return () => mainButton.hide();
   }, [step]);
 
@@ -201,8 +191,21 @@ export function OrderPage() {
       setOrderSuccess(true);
       hapticFeedback.notificationOccurred('success');
       mainButton.hide();
+
+      // Save trip
+      const now = new Date();
+      addTrip({
+        from: fromAddress,
+        to: toAddress,
+        date: now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }),
+        time: now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        price: totalPrice!,
+        tariff: tariff.name,
+        distanceKm: distanceKm ?? 0,
+        status: 'completed',
+      });
     }, 800);
-  }, [canSubmit]);
+  }, [canSubmit, fromAddress, toAddress, totalPrice, tariff.name, distanceKm, addTrip]);
 
   handleMainButtonRef.current = handleMainButton;
 
@@ -214,11 +217,17 @@ export function OrderPage() {
   if (orderSuccess) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-center view-enter">
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-emerald-500/20">
+        <div
+          className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl animate-pulse-glow"
+          style={{ background: 'rgba(0, 255, 136, 0.15)' }}
+        >
           <CircleDollarSign className="text-emerald-400" size={40} />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Заказ принят!</h2>
-        <p className="text-[var(--color-accent)] font-semibold mb-1">{totalPrice} ₽</p>
+        <h2 className="text-2xl font-black text-white mb-2 text-glow">Заказ принят!</h2>
+        <p className="font-bold text-2xl mb-1" style={{ color: '#00e5ff' }}>{totalPrice} ₽</p>
+        {totalDiscount > 0 && rawPrice && (
+          <p className="text-sm text-slate-500 line-through mb-1">{rawPrice} ₽</p>
+        )}
         <p className="text-slate-500 text-sm">С вами свяжутся в ближайшее время</p>
       </div>
     );
@@ -226,45 +235,52 @@ export function OrderPage() {
 
   return (
     <div className="p-4 pb-24 view-enter">
-      {/* Скрытая карта для расчёта маршрута — вынесена за экран, чтобы кнопка «В Карты» не отображалась */}
       {hasYandexMapsKey() && (
-        <div
-          className="fixed overflow-hidden"
-          style={{ left: -9999, top: 0, width: 400, height: 400, zIndex: -1 }}
-          aria-hidden="true"
-        >
+        <div className="fixed overflow-hidden" style={{ left: -9999, top: 0, width: 400, height: 400, zIndex: -1 }} aria-hidden="true">
           <div ref={mapRef} className="w-full h-full" />
         </div>
       )}
-      {/* Progress — современный степпер */}
+
+      {/* Progress bar with glow */}
       <div className="flex items-center gap-2 mb-6">
         {STEPS.map((s) => (
           <button
             key={s.id}
             type="button"
             onClick={() => s.id <= step && setStep(s.id)}
-            className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-              s.id <= step ? 'bg-[var(--color-accent)]' : 'bg-white/10'
-            } ${s.id === step ? 'opacity-100' : s.id < step ? 'opacity-60' : ''}`}
+            className="h-1.5 flex-1 rounded-full transition-all duration-300"
+            style={{
+              background: s.id <= step
+                ? 'linear-gradient(90deg, #00e5ff, #7c3aed)'
+                : 'rgba(255,255,255,0.06)',
+              boxShadow: s.id === step ? '0 0 10px rgba(0, 229, 255, 0.4)' : 'none',
+              opacity: s.id <= step ? 1 : 0.4,
+            }}
             aria-label={s.title}
           />
         ))}
       </div>
-      <p className="text-slate-400 text-sm font-medium mb-5">{STEPS[step - 1].title}</p>
+      <p className="text-sm font-semibold mb-5" style={{ color: '#00e5ff' }}>{STEPS[step - 1].title}</p>
+
+      {/* Discount banner */}
+      {totalDiscount > 0 && step <= 2 && (
+        <div className="card-glow p-3 mb-4 flex items-center gap-3" style={{ borderColor: 'rgba(0, 255, 136, 0.2)' }}>
+          <Sparkles size={18} style={{ color: '#00ff88' }} />
+          <span className="text-sm font-semibold" style={{ color: '#00ff88' }}>
+            Скидка {totalDiscount}% {firstRideDiscount > referralDiscount ? '(первая поездка)' : '(реферальная)'}
+          </span>
+        </div>
+      )}
 
       {/* Step 1: Маршрут */}
       {step === 1 && (
         <div className="step-enter space-y-4">
           <div className="relative">
-            <label className="mb-2 block text-sm font-medium text-slate-400">Откуда</label>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Откуда</label>
             <input
               type="text"
               value={fromAddress}
-              onChange={(e) => {
-                setFromAddress(e.target.value);
-                fetchSuggest(e.target.value, setFromSuggests);
-                setFromSuggestOpen(true);
-              }}
+              onChange={(e) => { setFromAddress(e.target.value); fetchSuggest(e.target.value, setFromSuggests); setFromSuggestOpen(true); }}
               onFocus={() => fromSuggests.length > 0 && setFromSuggestOpen(true)}
               onBlur={() => setTimeout(() => setFromSuggestOpen(false), 200)}
               placeholder="Адрес отправления"
@@ -274,32 +290,18 @@ export function OrderPage() {
               <ul className="card-solid absolute z-10 top-full left-0 right-0 mt-2 py-2 shadow-xl max-h-40 overflow-auto">
                 {fromSuggests.map((s) => (
                   <li key={s}>
-                    <button
-                      type="button"
-                      className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 text-sm transition-colors"
-                      onMouseDown={() => {
-                        setFromAddress(s);
-                        setFromSuggests([]);
-                        setFromSuggestOpen(false);
-                      }}
-                    >
-                      {s}
-                    </button>
+                    <button type="button" className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 text-sm transition-colors" onMouseDown={() => { setFromAddress(s); setFromSuggests([]); setFromSuggestOpen(false); }}>{s}</button>
                   </li>
                 ))}
               </ul>
             )}
           </div>
           <div className="relative">
-            <label className="mb-2 block text-sm font-medium text-slate-400">Куда</label>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Куда</label>
             <input
               type="text"
               value={toAddress}
-              onChange={(e) => {
-                setToAddress(e.target.value);
-                fetchSuggest(e.target.value, setToSuggests);
-                setToSuggestOpen(true);
-              }}
+              onChange={(e) => { setToAddress(e.target.value); fetchSuggest(e.target.value, setToSuggests); setToSuggestOpen(true); }}
               onFocus={() => toSuggests.length > 0 && setToSuggestOpen(true)}
               onBlur={() => setTimeout(() => setToSuggestOpen(false), 200)}
               placeholder="Адрес назначения"
@@ -309,24 +311,14 @@ export function OrderPage() {
               <ul className="card-solid absolute z-10 top-full left-0 right-0 mt-2 py-2 shadow-xl max-h-40 overflow-auto">
                 {toSuggests.map((s) => (
                   <li key={s}>
-                    <button
-                      type="button"
-                      className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 text-sm transition-colors"
-                      onMouseDown={() => {
-                        setToAddress(s);
-                        setToSuggests([]);
-                        setToSuggestOpen(false);
-                      }}
-                    >
-                      {s}
-                    </button>
+                    <button type="button" className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 text-sm transition-colors" onMouseDown={() => { setToAddress(s); setToSuggests([]); setToSuggestOpen(false); }}>{s}</button>
                   </li>
                 ))}
               </ul>
             )}
           </div>
           {!hasYandexMapsKey() && (
-            <p className="text-amber-200/80 text-xs">Добавьте VITE_YANDEX_MAPS_API_KEY для подсказок</p>
+            <p className="text-xs" style={{ color: 'rgba(0, 229, 255, 0.6)' }}>Добавьте VITE_YANDEX_MAPS_API_KEY для подсказок</p>
           )}
         </div>
       )}
@@ -343,28 +335,40 @@ export function OrderPage() {
                   key={t.id}
                   type="button"
                   onClick={() => { hapticFeedback.selectionChanged(); setSelectedTariff(t.id); }}
-                  className={`card-solid flex items-center gap-3 p-4 transition-all ${
-                    isSelected
-                      ? 'ring-2 ring-[var(--color-accent)] bg-[var(--color-accent-soft)]'
-                      : 'hover:bg-white/5'
-                  }`}
+                  className="relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95"
+                  style={{
+                    background: isSelected ? 'rgba(0, 229, 255, 0.08)' : 'var(--color-surface-solid)',
+                    border: `1px solid ${isSelected ? 'rgba(0, 229, 255, 0.3)' : 'var(--color-border)'}`,
+                    boxShadow: isSelected ? '0 0 20px rgba(0, 229, 255, 0.15)' : 'none',
+                  }}
                 >
-                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isSelected ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]' : 'bg-white/5 text-slate-400'}`}>
-                    <Icon size={20} />
+                  <span
+                    className="flex h-12 w-12 items-center justify-center rounded-xl transition-all"
+                    style={{
+                      background: isSelected ? 'rgba(0, 229, 255, 0.15)' : 'rgba(255,255,255,0.04)',
+                      boxShadow: isSelected ? '0 0 15px rgba(0, 229, 255, 0.2)' : 'none',
+                    }}
+                  >
+                    <Icon size={24} style={{ color: isSelected ? '#00e5ff' : '#475569' }} />
                   </span>
-                  <div className="text-left min-w-0">
-                    <div className={`font-semibold text-sm truncate ${isSelected ? 'text-[var(--color-accent)]' : 'text-slate-200'}`}>{t.name}</div>
-                    <div className="text-xs text-slate-500">{t.pricePerKm} ₽/км</div>
+                  <div className="text-center">
+                    <div className="font-bold text-sm" style={{ color: isSelected ? '#00e5ff' : '#e2e8f0' }}>{t.name}</div>
+                    <div className="text-xs mt-0.5" style={{ color: '#64748b' }}>{t.pricePerKm} ₽/км</div>
                   </div>
                 </button>
               );
             })}
           </div>
           {distanceKm != null && distanceKm > 0 ? (
-            <div className="card-solid p-5">
+            <div className="card-glow p-5">
               <div className="flex justify-between items-baseline">
                 <span className="text-slate-400 text-sm">≈ {distanceKm} км</span>
-                <span className="text-2xl font-bold text-[var(--color-accent)]">{totalPrice} ₽</span>
+                <div className="text-right">
+                  <span className="text-2xl font-black" style={{ color: '#00e5ff', textShadow: '0 0 10px rgba(0,229,255,0.3)' }}>{totalPrice} ₽</span>
+                  {totalDiscount > 0 && rawPrice && (
+                    <span className="block text-xs text-slate-500 line-through">{rawPrice} ₽</span>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
@@ -377,43 +381,20 @@ export function OrderPage() {
       {step === 3 && (
         <div className="step-enter space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-400">Когда</label>
-            <input
-              type="datetime-local"
-              value={dateTime}
-              onChange={(e) => setDateTime(e.target.value)}
-              className="input"
-            />
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Когда</label>
+            <input type="datetime-local" value={dateTime} onChange={(e) => setDateTime(e.target.value)} className="input" />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-400">Имя</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ваше имя"
-              className="input"
-            />
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Имя</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ваше имя" className="input" />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-400">Телефон</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+7 (999) 123-45-67"
-              className="input"
-            />
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Телефон</label>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (999) 123-45-67" className="input" />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-400">Комментарий</label>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Пожелания к поездке"
-              rows={2}
-              className="input resize-none"
-            />
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Комментарий</label>
+            <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Пожелания к поездке" rows={2} className="input resize-none" />
           </div>
         </div>
       )}
@@ -421,18 +402,23 @@ export function OrderPage() {
       {/* Step 4: Подтверждение */}
       {step === 4 && (
         <div className="step-enter">
-          <div className="card-solid space-y-4 p-5">
+          <div className="card-glow space-y-4 p-5">
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Маршрут</span>
               <span className="text-white text-right max-w-[60%] truncate">{fromAddress} → {toAddress}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Класс</span>
-              <span className="text-white font-medium">{tariff.name}</span>
+              <span className="text-white font-semibold">{tariff.name}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Стоимость</span>
-              <span className="text-[var(--color-accent)] font-bold">{totalPrice} ₽</span>
+              <div className="text-right">
+                <span className="font-black" style={{ color: '#00e5ff' }}>{totalPrice} ₽</span>
+                {totalDiscount > 0 && rawPrice && (
+                  <span className="ml-2 text-xs text-slate-500 line-through">{rawPrice} ₽</span>
+                )}
+              </div>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Имя</span>
@@ -443,7 +429,7 @@ export function OrderPage() {
               <span className="text-white">{phone}</span>
             </div>
             {comment.trim() && (
-              <div className="flex justify-between text-sm pt-3 border-t border-[var(--color-border)]">
+              <div className="flex justify-between text-sm pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
                 <span className="text-slate-400">Комментарий</span>
                 <span className="text-white text-right max-w-[60%]">{comment}</span>
               </div>
@@ -453,7 +439,7 @@ export function OrderPage() {
         </div>
       )}
 
-      {/* Навигация: Назад / Далее */}
+      {/* Navigation */}
       <div className="fixed bottom-20 left-0 right-0 px-4 flex items-center justify-between gap-3 safe-area-pb">
         <button
           type="button"
@@ -468,11 +454,7 @@ export function OrderPage() {
           <button
             type="button"
             onClick={goNext}
-            disabled={
-              (step === 1 && !canNextStep1) ||
-              (step === 2 && !canNextStep2) ||
-              (step === 3 && !canNextStep3)
-            }
+            disabled={(step === 1 && !canNextStep1) || (step === 2 && !canNextStep2) || (step === 3 && !canNextStep3)}
             className="btn-primary flex-1 flex items-center justify-center gap-1.5 py-3.5 px-4"
           >
             Далее
