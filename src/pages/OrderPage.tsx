@@ -207,6 +207,7 @@ export function OrderPage() {
       from: fromAddress,
       to: toAddress,
       carClass: tariff.id,
+      carClassLabel: tariff.name,
       price: totalPrice,
       km: distanceKm ?? 0,
       name,
