@@ -22,48 +22,40 @@ export function UserCard({ variant = 'compact', linkToProfile = true }: UserCard
   };
 
   const isCompact = variant === 'compact';
-  const size = isCompact ? 'h-12 w-12' : 'h-16 w-16';
-  const padding = isCompact ? 'p-3' : 'p-5';
+  const size = isCompact ? 'h-11 w-11' : 'h-14 w-14';
+  const padding = isCompact ? 'p-3.5' : 'p-5';
 
-  const className = `card-glow flex w-full items-center gap-4 ${padding} text-left transition-all ${linkToProfile ? 'hover:border-[var(--color-accent)]/30 active:scale-[0.98] cursor-pointer' : ''}`;
+  const wrapClass = `card-glow flex w-full items-center gap-3.5 ${padding} text-left transition-all ${linkToProfile ? 'active:scale-[0.98] cursor-pointer' : ''}`;
+
   const content = (
     <>
       {tgUser?.photo_url ? (
-        <img
-          src={tgUser.photo_url}
-          alt=""
-          className={`${size} shrink-0 rounded-2xl object-cover ring-2 ring-[var(--color-accent)]/20`}
-        />
+        <img src={tgUser.photo_url} alt="" className={`${size} shrink-0 rounded-full object-cover`} />
       ) : (
         <div
-          className={`flex ${size} shrink-0 items-center justify-center rounded-2xl text-white font-bold ${isCompact ? 'text-lg' : 'text-xl'}`}
-          style={{
-            background: 'linear-gradient(135deg, #00e5ff 0%, #7c3aed 100%)',
-            boxShadow: '0 4px 20px rgba(0, 229, 255, 0.3)',
-          }}
+          className={`flex ${size} shrink-0 items-center justify-center rounded-full font-bold ${isCompact ? 'text-base' : 'text-lg'}`}
+          style={{ background: '#d4a853', color: '#0a0a0a' }}
         >
-          {displayName && displayName !== 'Гость' ? displayName.charAt(0).toUpperCase() : <UserIcon size={isCompact ? 24 : 32} />}
+          {displayName && displayName !== 'Гость' ? displayName.charAt(0).toUpperCase() : <UserIcon size={isCompact ? 20 : 26} />}
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <p className={`font-bold text-white truncate ${isCompact ? 'text-base' : 'text-lg'}`}>
+        <p className={`font-semibold text-white truncate ${isCompact ? 'text-[15px]' : 'text-lg'}`}>
           {displayName}
         </p>
-        <p className={`truncate ${isCompact ? 'text-xs mt-0.5' : 'text-sm mt-0.5'}`} style={{ color: isAuthorized ? '#00e5ff' : '#64748b' }}>
+        <p className={`truncate ${isCompact ? 'text-xs mt-0.5' : 'text-sm mt-0.5'}`} style={{ color: isAuthorized ? '#a3a3a3' : '#525252' }}>
           {username || (isAuthorized ? 'Telegram' : 'Откройте через бота')}
         </p>
       </div>
       {isAuthorized && (
-        <div className="shrink-0 w-2 h-2 rounded-full" style={{ background: '#00ff88', boxShadow: '0 0 8px #00ff88' }} />
+        <div className="shrink-0 w-2 h-2 rounded-full" style={{ background: '#34d399' }} />
       )}
     </>
   );
 
   return linkToProfile ? (
-    <button type="button" onClick={handleClick} className={className}>
-      {content}
-    </button>
+    <button type="button" onClick={handleClick} className={wrapClass}>{content}</button>
   ) : (
-    <div className={className}>{content}</div>
+    <div className={wrapClass}>{content}</div>
   );
 }

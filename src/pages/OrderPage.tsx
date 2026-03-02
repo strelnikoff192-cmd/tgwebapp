@@ -256,17 +256,17 @@ export function OrderPage() {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-center view-enter">
         <div
-          className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl animate-pulse-glow"
-          style={{ background: 'rgba(0, 255, 136, 0.15)' }}
+          className="mb-5 flex h-16 w-16 items-center justify-center rounded-full"
+          style={{ background: 'rgba(52, 211, 153, 0.1)' }}
         >
-          <CircleDollarSign className="text-emerald-400" size={40} />
+          <CircleDollarSign size={32} style={{ color: '#34d399' }} />
         </div>
-        <h2 className="text-2xl font-black text-white mb-2 text-glow">Заказ принят!</h2>
-        <p className="font-bold text-2xl mb-1" style={{ color: '#00e5ff' }}>{totalPrice} ₽</p>
+        <h2 className="text-xl font-bold text-white mb-1.5">Заказ принят!</h2>
+        <p className="font-bold text-2xl mb-1" style={{ color: '#d4a853' }}>{totalPrice} ₽</p>
         {totalDiscount > 0 && rawPrice && (
-          <p className="text-sm text-slate-500 line-through mb-1">{rawPrice} ₽</p>
+          <p className="text-sm line-through mb-1" style={{ color: '#525252' }}>{rawPrice} ₽</p>
         )}
-        <p className="text-slate-500 text-sm">С вами свяжутся в ближайшее время</p>
+        <p className="text-sm" style={{ color: '#737373' }}>С вами свяжутся в ближайшее время</p>
       </div>
     );
   }
@@ -288,24 +288,21 @@ export function OrderPage() {
             onClick={() => s.id <= step && setStep(s.id)}
             className="h-1.5 flex-1 rounded-full transition-all duration-300"
             style={{
-              background: s.id <= step
-                ? 'linear-gradient(90deg, #00e5ff, #7c3aed)'
-                : 'rgba(255,255,255,0.06)',
-              boxShadow: s.id === step ? '0 0 10px rgba(0, 229, 255, 0.4)' : 'none',
+              background: s.id <= step ? '#d4a853' : 'rgba(255,255,255,0.06)',
               opacity: s.id <= step ? 1 : 0.4,
             }}
             aria-label={s.title}
           />
         ))}
       </div>
-      <p className="text-sm font-semibold mb-5" style={{ color: '#00e5ff' }}>{STEPS[step - 1].title}</p>
+      <p className="text-sm font-semibold mb-5" style={{ color: '#d4a853' }}>{STEPS[step - 1].title}</p>
 
       {/* Discount banner */}
       {totalDiscount > 0 && step <= 2 && (
-        <div className="card-glow p-3 mb-4 flex items-center gap-3" style={{ borderColor: 'rgba(0, 255, 136, 0.2)' }}>
-          <Sparkles size={18} style={{ color: '#00ff88' }} />
-          <span className="text-sm font-semibold" style={{ color: '#00ff88' }}>
-            Скидка {totalDiscount}% {firstRideDiscount > referralDiscount ? '(первая поездка)' : '(реферальная)'}
+        <div className="card-glow p-3 mb-4 flex items-center gap-3">
+          <Sparkles size={16} style={{ color: '#34d399' }} />
+          <span className="text-sm font-medium" style={{ color: '#34d399' }}>
+            Скидка {totalDiscount}% {firstRideDiscount > referralDiscount ? '— первая поездка' : '— реферальная'}
           </span>
         </div>
       )}
@@ -314,7 +311,7 @@ export function OrderPage() {
       {step === 1 && (
         <div className="step-enter space-y-4">
           <div className="relative">
-            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Откуда</label>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#737373' }}>Откуда</label>
             <input
               type="text"
               value={fromAddress}
@@ -335,7 +332,7 @@ export function OrderPage() {
             )}
           </div>
           <div className="relative">
-            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Куда</label>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#737373' }}>Куда</label>
             <input
               type="text"
               value={toAddress}
@@ -356,7 +353,7 @@ export function OrderPage() {
             )}
           </div>
           {!hasYandexMapsKey() && (
-            <p className="text-xs" style={{ color: 'rgba(0, 229, 255, 0.6)' }}>Добавьте VITE_YANDEX_MAPS_API_KEY для подсказок</p>
+            <p className="text-xs" style={{ color: '#525252' }}>Добавьте VITE_YANDEX_MAPS_API_KEY для подсказок</p>
           )}
         </div>
       )}
@@ -375,23 +372,21 @@ export function OrderPage() {
                   onClick={() => { hapticFeedback.selectionChanged(); setSelectedTariff(t.id); }}
                   className="relative flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95"
                   style={{
-                    background: isSelected ? 'rgba(0, 229, 255, 0.08)' : 'var(--color-surface-solid)',
-                    border: `1px solid ${isSelected ? 'rgba(0, 229, 255, 0.3)' : 'var(--color-border)'}`,
-                    boxShadow: isSelected ? '0 0 20px rgba(0, 229, 255, 0.15)' : 'none',
+                    background: isSelected ? 'rgba(212, 168, 83, 0.06)' : '#1a1a1a',
+                    border: `1px solid ${isSelected ? 'rgba(212, 168, 83, 0.3)' : 'rgba(255,255,255,0.06)'}`,
                   }}
                 >
                   <span
-                    className="flex h-12 w-12 items-center justify-center rounded-xl transition-all"
+                    className="flex h-11 w-11 items-center justify-center rounded-full transition-all"
                     style={{
-                      background: isSelected ? 'rgba(0, 229, 255, 0.15)' : 'rgba(255,255,255,0.04)',
-                      boxShadow: isSelected ? '0 0 15px rgba(0, 229, 255, 0.2)' : 'none',
+                      background: isSelected ? 'rgba(212, 168, 83, 0.12)' : 'rgba(255,255,255,0.04)',
                     }}
                   >
-                    <Icon size={24} style={{ color: isSelected ? '#00e5ff' : '#475569' }} />
+                    <Icon size={22} style={{ color: isSelected ? '#d4a853' : '#525252' }} />
                   </span>
                   <div className="text-center">
-                    <div className="font-bold text-sm" style={{ color: isSelected ? '#00e5ff' : '#e2e8f0' }}>{t.name}</div>
-                    <div className="text-xs mt-0.5" style={{ color: '#64748b' }}>{t.pricePerKm} ₽/км</div>
+                    <div className="font-semibold text-sm" style={{ color: isSelected ? '#d4a853' : '#e5e5e5' }}>{t.name}</div>
+                    <div className="text-xs mt-0.5" style={{ color: '#737373' }}>{t.pricePerKm} ₽/км</div>
                   </div>
                 </button>
               );
@@ -400,11 +395,11 @@ export function OrderPage() {
           {distanceKm != null && distanceKm > 0 ? (
             <div className="card-glow p-5">
               <div className="flex justify-between items-baseline">
-                <span className="text-slate-400 text-sm">≈ {distanceKm} км × {tariff.pricePerKm} ₽</span>
+                <span className="text-sm" style={{ color: '#737373' }}>≈ {distanceKm} км × {tariff.pricePerKm} ₽</span>
                 <div className="text-right">
-                  <span className="text-2xl font-black" style={{ color: '#00e5ff', textShadow: '0 0 10px rgba(0,229,255,0.3)' }}>{totalPrice} ₽</span>
+                  <span className="text-2xl font-bold" style={{ color: '#d4a853' }}>{totalPrice} ₽</span>
                   {totalDiscount > 0 && rawPrice && (
-                    <span className="block text-xs text-slate-500 line-through">{rawPrice} ₽</span>
+                    <span className="block text-xs line-through" style={{ color: '#525252' }}>{rawPrice} ₽</span>
                   )}
                 </div>
               </div>
@@ -419,19 +414,19 @@ export function OrderPage() {
       {step === 3 && (
         <div className="step-enter space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Когда</label>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#737373' }}>Когда</label>
             <input type="datetime-local" value={dateTime} onChange={(e) => setDateTime(e.target.value)} className="input" />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Имя</label>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#737373' }}>Имя</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ваше имя" className="input" />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Телефон</label>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#737373' }}>Телефон</label>
             <input type="tel" value={phone} onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(formatPhone(e.target.value))} placeholder="(999) 123-45-67" className="input" />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-semibold" style={{ color: '#64748b' }}>Комментарий</label>
+            <label className="mb-2 block text-sm font-semibold" style={{ color: '#737373' }}>Комментарий</label>
             <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Пожелания к поездке" rows={2} className="input resize-none" />
           </div>
         </div>
@@ -452,9 +447,9 @@ export function OrderPage() {
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Стоимость</span>
               <div className="text-right">
-                <span className="font-black" style={{ color: '#00e5ff' }}>{totalPrice} ₽</span>
+                <span className="font-bold" style={{ color: '#d4a853' }}>{totalPrice} ₽</span>
                 {totalDiscount > 0 && rawPrice && (
-                  <span className="ml-2 text-xs text-slate-500 line-through">{rawPrice} ₽</span>
+                  <span className="ml-2 text-xs line-through" style={{ color: '#525252' }}>{rawPrice} ₽</span>
                 )}
               </div>
             </div>

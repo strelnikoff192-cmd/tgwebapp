@@ -14,15 +14,14 @@ export function BottomNav() {
   const { activeTab, setActiveTab } = useNavStore();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-pb px-3 pb-3 pt-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-pb">
       <div
-        className="relative flex items-center justify-around rounded-2xl px-1 py-1"
+        className="flex items-center justify-around px-2 py-1.5"
         style={{
-          background: 'rgba(6, 11, 24, 0.92)',
+          background: 'rgba(10, 10, 10, 0.95)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(0, 229, 255, 0.1)',
-          boxShadow: '0 -4px 30px rgba(0, 229, 255, 0.05)',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
         }}
       >
         {tabs.map(({ id, label, Icon }) => {
@@ -32,29 +31,25 @@ export function BottomNav() {
               key={id}
               type="button"
               onClick={() => { hapticFeedback.selectionChanged(); setActiveTab(id); }}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 py-2 transition-all duration-300 active:scale-90"
+              className="flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0 py-2 transition-all duration-200 active:scale-90"
               aria-label={label}
             >
               <span
-                className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300"
+                className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200"
                 style={isActive ? {
-                  background: 'rgba(0, 229, 255, 0.12)',
-                  boxShadow: '0 0 20px rgba(0, 229, 255, 0.25), inset 0 0 12px rgba(0, 229, 255, 0.08)',
+                  background: 'rgba(212, 168, 83, 0.12)',
                 } : {}}
               >
                 <Icon
-                  size={22}
-                  strokeWidth={isActive ? 2.5 : 1.8}
-                  className="transition-colors duration-300"
-                  style={{ color: isActive ? '#00e5ff' : '#475569' }}
+                  size={21}
+                  strokeWidth={isActive ? 2.4 : 1.6}
+                  style={{ color: isActive ? '#d4a853' : '#525252' }}
+                  className="transition-colors duration-200"
                 />
               </span>
               <span
-                className="text-[10px] font-semibold tracking-wide transition-all duration-300"
-                style={{
-                  color: isActive ? '#00e5ff' : '#475569',
-                  textShadow: isActive ? '0 0 8px rgba(0, 229, 255, 0.5)' : 'none',
-                }}
+                className="text-[10px] font-semibold transition-colors duration-200"
+                style={{ color: isActive ? '#d4a853' : '#525252' }}
               >
                 {label}
               </span>

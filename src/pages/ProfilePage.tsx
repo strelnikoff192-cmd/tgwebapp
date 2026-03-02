@@ -14,128 +14,95 @@ export function ProfilePage() {
 
   return (
     <div className="p-5 pb-10 view-enter">
-      <h2 className="text-2xl font-black text-white mb-6 tracking-tight text-glow">Профиль</h2>
+      <h2 className="text-xl font-bold text-white mb-5">Профиль</h2>
 
-      <div className="mb-6">
+      <div className="mb-5">
         <UserCard variant="full" linkToProfile={false} />
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-3 gap-2.5 mb-5">
         <div className="card-glow p-3 text-center">
-          <div className="text-lg font-black text-white">{tripsCount}</div>
-          <div className="text-[10px] font-semibold" style={{ color: '#64748b' }}>Поездок</div>
+          <div className="text-base font-bold text-white">{tripsCount}</div>
+          <div className="text-[10px] font-medium" style={{ color: '#737373' }}>Поездок</div>
         </div>
         <div className="card-glow p-3 text-center">
-          <div className="text-lg font-black" style={{ color: '#00e5ff' }}>{bonusPoints}</div>
-          <div className="text-[10px] font-semibold" style={{ color: '#64748b' }}>Баллов</div>
+          <div className="text-base font-bold" style={{ color: '#d4a853' }}>{bonusPoints}</div>
+          <div className="text-[10px] font-medium" style={{ color: '#737373' }}>Баллов</div>
         </div>
         <div className="card-glow p-3 text-center">
-          <div className="text-lg font-black text-white">{totalSpent.toLocaleString('ru-RU')} ₽</div>
-          <div className="text-[10px] font-semibold" style={{ color: '#64748b' }}>Потрачено</div>
+          <div className="text-base font-bold text-white">{totalSpent.toLocaleString('ru-RU')} ₽</div>
+          <div className="text-[10px] font-medium" style={{ color: '#737373' }}>Потрачено</div>
         </div>
       </div>
 
-      {/* Telegram info */}
+      {/* TG info */}
       {isAuthorized && tgUser && (
-        <div className="space-y-2 mb-6">
-          <div className="card-solid flex items-center gap-4 p-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: 'rgba(0, 229, 255, 0.1)' }}>
-              <UserIcon size={20} style={{ color: '#00e5ff' }} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs" style={{ color: '#64748b' }}>Имя</div>
-              <div className="text-white font-semibold truncate">{displayName}</div>
-            </div>
-          </div>
-
-          {tgUser.username && (
-            <div className="card-solid flex items-center gap-4 p-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: 'rgba(124, 58, 237, 0.1)' }}>
-                <AtSign size={20} style={{ color: '#7c3aed' }} />
+        <div className="space-y-2 mb-5">
+          {([
+            { icon: UserIcon, label: 'Имя', value: displayName, bg: 'rgba(212,168,83,0.08)', clr: '#d4a853' },
+            tgUser.username ? { icon: AtSign, label: 'Username', value: `@${tgUser.username}`, bg: 'rgba(212,168,83,0.08)', clr: '#d4a853' } : null,
+            { icon: Hash, label: 'Telegram ID', value: String(tgUser.id), bg: 'rgba(255,255,255,0.04)', clr: '#a3a3a3' },
+            tgUser.language_code ? { icon: Globe, label: 'Язык', value: tgUser.language_code.toUpperCase(), bg: 'rgba(255,255,255,0.04)', clr: '#a3a3a3' } : null,
+          ].filter(Boolean) as { icon: typeof UserIcon; label: string; value: string; bg: string; clr: string }[]).map((item) => (
+            <div key={item.label} className="card-solid flex items-center gap-3.5 p-3.5">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: item.bg }}>
+                <item.icon size={17} style={{ color: item.clr }} />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-xs" style={{ color: '#64748b' }}>Username</div>
-                <div className="text-white font-semibold truncate">@{tgUser.username}</div>
+                <div className="text-[10px] font-medium" style={{ color: '#737373' }}>{item.label}</div>
+                <div className="text-sm font-semibold text-white truncate">{item.value}</div>
               </div>
             </div>
-          )}
-
-          <div className="card-solid flex items-center gap-4 p-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: 'rgba(255, 45, 120, 0.1)' }}>
-              <Hash size={20} style={{ color: '#ff2d78' }} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs" style={{ color: '#64748b' }}>Telegram ID</div>
-              <div className="text-white font-semibold">{tgUser.id}</div>
-            </div>
-          </div>
-
-          {tgUser.language_code && (
-            <div className="card-solid flex items-center gap-4 p-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: 'rgba(0, 255, 136, 0.1)' }}>
-                <Globe size={20} style={{ color: '#00ff88' }} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs" style={{ color: '#64748b' }}>Язык</div>
-                <div className="text-white font-semibold">{tgUser.language_code.toUpperCase()}</div>
-              </div>
-            </div>
-          )}
+          ))}
         </div>
       )}
 
       {!isAuthorized && (
-        <div className="card-glow p-6 text-center mb-6">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-float" style={{ background: 'rgba(0, 229, 255, 0.1)' }}>
-            <UserIcon size={32} style={{ color: '#00e5ff' }} />
+        <div className="card-glow p-6 text-center mb-5">
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: '#1a1a1a' }}>
+            <UserIcon size={26} style={{ color: '#525252' }} />
           </div>
-          <h3 className="text-lg font-bold text-white mb-2">Гостевой режим</h3>
-          <p className="text-sm" style={{ color: '#64748b' }}>
-            Откройте приложение через Telegram бота для полного доступа
+          <h3 className="text-base font-semibold text-white mb-1">Гостевой режим</h3>
+          <p className="text-xs" style={{ color: '#525252' }}>
+            Откройте через Telegram бота
           </p>
         </div>
       )}
 
       {/* Settings */}
-      <div className="space-y-2 mb-6">
-        <h3 className="text-sm font-bold mb-3" style={{ color: '#64748b' }}>Настройки</h3>
+      <div className="mb-5">
+        <p className="text-xs font-semibold mb-2.5" style={{ color: '#737373' }}>Настройки</p>
         <button
           type="button"
           onClick={() => setNotifications(!notifications)}
-          className="card-solid flex items-center gap-4 p-4 w-full text-left transition-all active:scale-[0.98]"
+          className="card-solid flex items-center gap-3.5 p-3.5 w-full text-left transition-all active:scale-[0.98]"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: notifications ? 'rgba(0, 229, 255, 0.1)' : 'rgba(255,255,255,0.04)' }}>
-            {notifications ? <Bell size={20} style={{ color: '#00e5ff' }} /> : <BellOff size={20} style={{ color: '#475569' }} />}
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: notifications ? 'rgba(212,168,83,0.08)' : 'rgba(255,255,255,0.04)' }}>
+            {notifications ? <Bell size={17} style={{ color: '#d4a853' }} /> : <BellOff size={17} style={{ color: '#525252' }} />}
           </span>
           <div className="flex-1 min-w-0">
-            <div className="text-white font-semibold text-sm">Уведомления</div>
-            <div className="text-xs" style={{ color: '#64748b' }}>{notifications ? 'Включены' : 'Выключены'}</div>
+            <div className="text-sm font-semibold text-white">Уведомления</div>
+            <div className="text-xs" style={{ color: '#737373' }}>{notifications ? 'Включены' : 'Выключены'}</div>
           </div>
-          <div
-            className="w-11 h-6 rounded-full p-0.5 transition-all"
-            style={{ background: notifications ? '#00e5ff' : 'rgba(255,255,255,0.1)' }}
-          >
-            <div
-              className="w-5 h-5 rounded-full bg-white transition-transform"
-              style={{ transform: notifications ? 'translateX(20px)' : 'translateX(0)' }}
-            />
+          <div className="w-10 h-[22px] rounded-full p-0.5 transition-all" style={{ background: notifications ? '#d4a853' : '#333' }}>
+            <div className="w-[18px] h-[18px] rounded-full bg-black transition-transform" style={{ transform: notifications ? 'translateX(18px)' : 'translateX(0)' }} />
           </div>
         </button>
       </div>
 
-      {/* Referral stats */}
-      <div className="card-glow p-4 flex items-center justify-between">
+      {/* Referral */}
+      <div className="card-glow p-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Share2 size={20} style={{ color: '#7c3aed' }} />
+          <Share2 size={17} style={{ color: '#737373' }} />
           <div>
-            <div className="text-sm font-bold text-white">Приглашено</div>
-            <div className="text-xs" style={{ color: '#64748b' }}>{invitedFriends} друзей</div>
+            <div className="text-sm font-semibold text-white">Приглашено</div>
+            <div className="text-xs" style={{ color: '#737373' }}>{invitedFriends} друзей</div>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-sm font-black" style={{ color: '#00e5ff' }}>+{bonusPoints}</div>
-          <div className="text-[10px]" style={{ color: '#64748b' }}>баллов</div>
+          <div className="text-sm font-bold" style={{ color: '#d4a853' }}>+{bonusPoints}</div>
+          <div className="text-[10px]" style={{ color: '#737373' }}>баллов</div>
         </div>
       </div>
     </div>
