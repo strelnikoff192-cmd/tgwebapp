@@ -186,23 +186,24 @@ export function OrderPage() {
     setIsSubmitting(true);
 
     const now = new Date();
+    const tripDateVal = dateTime ? dateTime.split('T')[0] : now.toISOString().split('T')[0];
+    const tripTimeVal = dateTime ? dateTime.split('T')[1] || '00:00' : now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
     const orderData = {
       from: fromAddress,
       to: toAddress,
-      tariff: tariff.name,
-      pricePerKm: tariff.pricePerKm,
-      distanceKm: distanceKm ?? 0,
+      carClass: tariff.name,
       price: totalPrice,
-      discount: totalDiscount,
+      km: distanceKm ?? 0,
       name,
       phone,
       comment,
-      dateTime: dateTime || now.toISOString(),
-      createdAt: now.toISOString(),
+      tripDate: tripDateVal,
+      tripTime: tripTimeVal,
     };
 
     try {
-      await fetch('https://taxi-globus-api-bvcksite.amvera.io/', {
+      await fetch('https://taxi-globus-api-bvcksite.amvera.io/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
