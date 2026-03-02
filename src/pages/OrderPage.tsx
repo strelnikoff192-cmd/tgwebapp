@@ -179,33 +179,56 @@ export function OrderPage() {
     mainButton.setParams({ isEnabled: step === MAX_STEP && Boolean(canSubmit) });
   }, [step, canSubmit, orderSuccess]);
 
-  const handleMainButton = useCallback(() => {
+  const handleMainButton = useCallback(async () => {
     if (!canSubmit) return;
     mainButton.disable();
     mainButton.showLoader();
     setIsSubmitting(true);
-    setTimeout(() => {
-      mainButton.hideLoader();
-      mainButton.enable();
-      setIsSubmitting(false);
-      setOrderSuccess(true);
-      hapticFeedback.notificationOccurred('success');
-      mainButton.hide();
 
-      // Save trip
-      const now = new Date();
-      addTrip({
-        from: fromAddress,
-        to: toAddress,
-        date: now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }),
-        time: now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-        price: totalPrice!,
-        tariff: tariff.name,
-        distanceKm: distanceKm ?? 0,
-        status: 'completed',
+    const now = new Date();
+    const orderData = {
+      from: fromAddress,
+      to: toAddress,
+      tariff: tariff.name,
+      pricePerKm: tariff.pricePerKm,
+      distanceKm: distanceKm ?? 0,
+      price: totalPrice,
+      discount: totalDiscount,
+      name,
+      phone,
+      comment,
+      dateTime: dateTime || now.toISOString(),
+      createdAt: now.toISOString(),
+    };
+
+    try {
+      await fetch('https://taxi-globus-api-bvcksite.amvera.io/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
       });
-    }, 800);
-  }, [canSubmit, fromAddress, toAddress, totalPrice, tariff.name, distanceKm, addTrip]);
+    } catch {
+      // Сохраняем заказ локально даже при ошибке сети
+    }
+
+    mainButton.hideLoader();
+    mainButton.enable();
+    setIsSubmitting(false);
+    setOrderSuccess(true);
+    hapticFeedback.notificationOccurred('success');
+    mainButton.hide();
+
+    addTrip({
+      from: fromAddress,
+      to: toAddress,
+      date: now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }),
+      time: now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      price: totalPrice!,
+      tariff: tariff.name,
+      distanceKm: distanceKm ?? 0,
+      status: 'completed',
+    });
+  }, [canSubmit, fromAddress, toAddress, totalPrice, totalDiscount, tariff.name, tariff.pricePerKm, distanceKm, addTrip, name, phone, comment, dateTime]);
 
   handleMainButtonRef.current = handleMainButton;
 
