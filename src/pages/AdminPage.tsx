@@ -166,9 +166,110 @@ function DashboardTab() {
   );
 }
 
+/* ─── Order Card ─── */
+function OrderCard({ o }: { o: import('@/store/adminStore').AdminOrder }) {
+  const { updateOrderStatus, setCommission } = useAdminStore();
+  const [commInput, setCommInput] = useState(o.commission != null ? String(o.commission) : '');
+  const [saving, setSaving] = useState(false);
+
+  async function handleSaveCommission() {
+    const val = parseInt(commInput, 10);
+    if (isNaN(val) || val <= 0) return;
+    setSaving(true);
+    await setCommission(o.id, val);
+    setSaving(false);
+  }
+
+  async function handleAccept() {
+    const val = parseInt(commInput, 10);
+    if (isNaN(val) || val <= 0) return;
+    setSaving(true);
+    await setCommission(o.id, val);
+    await updateOrderStatus(o.id, 'accepted');
+    setSaving(false);
+  }
+
+  return (
+    <div className="card-solid p-4 space-y-2">
+      <div className="flex items-start justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold text-white">{o.from} → {o.to}</div>
+          <div className="text-xs text-neutral-400 mt-1">{o.clientName} · {o.clientPhone}</div>
+          <div className="text-xs text-neutral-500 mt-0.5">
+            {formatDate(o.createdAt)} · {o.carClassLabel || o.carClass}
+            {o.driverName && <span> · {o.driverName}</span>}
+          </div>
+          {o.comment && <div className="text-xs text-neutral-600 mt-0.5 italic">{o.comment}</div>}
+        </div>
+        <div className="text-right ml-3">
+          <div className="text-sm font-bold text-white">{formatMoney(o.price)}</div>
+          <span
+            className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mt-1"
+            style={{ background: statusColor(o.status) + '20', color: statusColor(o.status) }}
+          >
+            {statusLabel(o.status)}
+          </span>
+        </div>
+      </div>
+
+      {/* Commission row */}
+      <div className="flex items-center gap-2 pt-1">
+        <span className="text-xs text-neutral-400 shrink-0">Комиссия:</span>
+        {o.status === 'done' || o.status === 'canceled' ? (
+          <span className="text-xs font-semibold text-white">
+            {o.commission != null ? `${o.commission} \u20bd` : '—'}
+          </span>
+        ) : (
+          <>
+            <input
+              type="number"
+              value={commInput}
+              onChange={(e) => setCommInput(e.target.value)}
+              placeholder="0"
+              className="input !py-1.5 !px-2.5 w-20 text-xs"
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveCommission()}
+            />
+            <span className="text-xs text-neutral-500">{'\u20bd'}</span>
+            <button
+              type="button"
+              onClick={handleSaveCommission}
+              disabled={saving || !commInput || parseInt(commInput, 10) <= 0}
+              className="btn-secondary px-2 py-1 text-[10px]"
+            >
+              {saving ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />}
+            </button>
+          </>
+        )}
+      </div>
+
+      {o.status === 'new' && (
+        <div className="flex gap-2 pt-1">
+          <button
+            type="button"
+            onClick={handleAccept}
+            disabled={saving || !commInput || parseInt(commInput, 10) <= 0}
+            className="btn-primary px-3 py-1.5 text-xs disabled:opacity-40"
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <ChevronRight size={14} />}
+            Принять
+          </button>
+          <button
+            type="button"
+            onClick={() => updateOrderStatus(o.id, 'canceled')}
+            className="btn-secondary px-3 py-1.5 text-xs"
+          >
+            <XCircle size={14} />
+            Отменить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Orders ─── */
 function OrdersTab() {
-  const { orders, updateOrderStatus, loading, fetchOrders } = useAdminStore();
+  const { orders, loading, fetchOrders } = useAdminStore();
   const [filter, setFilter] = useState<'all' | OrderStatus>('all');
 
   const filtered = filter === 'all' ? orders : orders.filter((o) => o.status === filter);
@@ -212,49 +313,7 @@ function OrdersTab() {
 
       <div className="space-y-3">
         {filtered.map((o) => (
-          <div key={o.id} className="card-solid p-4 space-y-2">
-            <div className="flex items-start justify-between">
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-white">{o.from} → {o.to}</div>
-                <div className="text-xs text-neutral-400 mt-1">{o.clientName} · {o.clientPhone}</div>
-                <div className="text-xs text-neutral-500 mt-0.5">
-                  {formatDate(o.createdAt)} · {o.carClassLabel || o.carClass}
-                  {o.driverName && <span> · {o.driverName}</span>}
-                </div>
-                {o.comment && <div className="text-xs text-neutral-600 mt-0.5 italic">{o.comment}</div>}
-              </div>
-              <div className="text-right ml-3">
-                <div className="text-sm font-bold text-white">{formatMoney(o.price)}</div>
-                <span
-                  className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mt-1"
-                  style={{ background: statusColor(o.status) + '20', color: statusColor(o.status) }}
-                >
-                  {statusLabel(o.status)}
-                </span>
-              </div>
-            </div>
-
-            {o.status === 'new' && (
-              <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => updateOrderStatus(o.id, 'accepted')}
-                  className="btn-primary px-3 py-1.5 text-xs"
-                >
-                  <ChevronRight size={14} />
-                  Принять
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateOrderStatus(o.id, 'canceled')}
-                  className="btn-secondary px-3 py-1.5 text-xs"
-                >
-                  <XCircle size={14} />
-                  Отменить
-                </button>
-              </div>
-            )}
-          </div>
+          <OrderCard key={o.id} o={o} />
         ))}
       </div>
     </div>

@@ -21,6 +21,7 @@ export interface AdminOrder {
   tripTime: string;
   comment: string;
   driverName: string | null;
+  commission: number | null;
 }
 
 export interface TariffConfig {
@@ -85,6 +86,7 @@ interface ApiOrderItem {
   trip_time: string;
   comment: string;
   driver_name: string | null;
+  commission: number | null;
 }
 
 function mapOrder(r: ApiOrderItem): AdminOrder {
@@ -104,6 +106,7 @@ function mapOrder(r: ApiOrderItem): AdminOrder {
     tripTime: r.trip_time,
     comment: r.comment || '',
     driverName: r.driver_name,
+    commission: r.commission,
   };
 }
 
@@ -118,6 +121,7 @@ interface AdminState {
   setSubTab: (tab: AdminSubTab) => void;
   fetchOrders: () => Promise<void>;
   updateOrderStatus: (orderId: string, status: string) => Promise<void>;
+  setCommission: (orderId: string, commission: number) => Promise<void>;
   fetchTariffs: () => Promise<void>;
   updateTariff: (tariffId: string, pricePerKm: number) => void;
   toggleTariff: (tariffId: string) => void;
@@ -177,6 +181,27 @@ export const useAdminStore = create<AdminState>()(
           o.id === orderId ? { ...o, status: status as OrderStatus, stage: status } : o,
         );
         set({ orders, stats: computeStats(orders) });
+      },
+
+      setCommission: async (orderId, commission) => {
+        const { settings } = get();
+        try {
+          const res = await fetch(`${API_BASE}/admin/api/orders/${orderId}/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeaders(settings.adminUser, settings.adminPass) },
+            body: JSON.stringify({ commission }),
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: 'Ошибка' }));
+            throw new Error(err.error || `HTTP ${res.status}`);
+          }
+        } catch {
+          // Update locally even if API fails
+        }
+        const orders = get().orders.map((o) =>
+          o.id === orderId ? { ...o, commission } : o,
+        );
+        set({ orders });
       },
 
       fetchTariffs: async () => {
