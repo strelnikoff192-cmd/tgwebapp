@@ -1,8 +1,9 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export type AdminSubTab = 'dashboard' | 'orders' | 'tariffs' | 'settings';
 
-export type OrderStatus = 'new' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+export type OrderStatus = 'new' | 'accepted' | 'assigned' | 'in_progress' | 'done' | 'canceled';
 
 export interface AdminOrder {
   id: string;
@@ -12,8 +13,14 @@ export interface AdminOrder {
   clientName: string;
   clientPhone: string;
   carClass: string;
+  carClassLabel: string;
   status: OrderStatus;
+  stage: string;
   createdAt: string;
+  tripDate: string;
+  tripTime: string;
+  comment: string;
+  driverName: string | null;
 }
 
 export interface TariffConfig {
@@ -31,24 +38,14 @@ export interface DashboardStats {
 }
 
 interface AdminSettings {
-  botToken: string;
+  adminUser: string;
+  adminPass: string;
   webhookUrl: string;
 }
 
 const API_BASE = 'https://taxi-globus-api-bvcksite.amvera.io';
 
-const today = new Date().toISOString().slice(0, 10);
-
-const MOCK_ORDERS: AdminOrder[] = [
-  { id: '1001', from: 'ул. Ленина 1', to: 'ул. Мира 25', price: 320, clientName: 'Иван Петров', clientPhone: '+7 (900) 123-45-67', carClass: 'econom', status: 'completed', createdAt: `${today}T09:15:00Z` },
-  { id: '1002', from: 'пр. Победы 10', to: 'ТЦ Глобус', price: 450, clientName: 'Анна Сидорова', clientPhone: '+7 (900) 234-56-78', carClass: 'comfort', status: 'in_progress', createdAt: `${today}T10:30:00Z` },
-  { id: '1003', from: 'Вокзал', to: 'Аэропорт', price: 1200, clientName: 'Олег Козлов', clientPhone: '+7 (900) 345-67-89', carClass: 'business', status: 'confirmed', createdAt: `${today}T11:00:00Z` },
-  { id: '1004', from: 'ул. Гагарина 5', to: 'ул. Пушкина 12', price: 280, clientName: 'Мария Иванова', clientPhone: '+7 (900) 456-78-90', carClass: 'econom', status: 'new', createdAt: `${today}T12:20:00Z` },
-  { id: '1005', from: 'ТЦ Мега', to: 'ул. Советская 3', price: 780, clientName: 'Дмитрий Волков', clientPhone: '+7 (900) 567-89-01', carClass: 'minivan', status: 'new', createdAt: `${today}T13:45:00Z` },
-  { id: '1006', from: 'пр. Ленина 50', to: 'ул. Кирова 8', price: 350, clientName: 'Елена Смирнова', clientPhone: '+7 (900) 678-90-12', carClass: 'comfort', status: 'cancelled', createdAt: '2026-03-02T18:00:00Z' },
-];
-
-const MOCK_TARIFFS: TariffConfig[] = [
+const TARIFFS: TariffConfig[] = [
   { id: 'econom', name: 'Эконом', pricePerKm: 30, enabled: true },
   { id: 'comfort', name: 'Комфорт', pricePerKm: 35, enabled: true },
   { id: 'minivan', name: 'Минивэн', pricePerKm: 50, enabled: true },
@@ -58,13 +55,55 @@ const MOCK_TARIFFS: TariffConfig[] = [
 function computeStats(orders: AdminOrder[]): DashboardStats {
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayOrders = orders.filter((o) => o.createdAt.startsWith(todayStr)).length;
-  const completed = orders.filter((o) => o.status === 'completed');
-  const totalRevenue = completed.reduce((s, o) => s + o.price, 0);
+  const doneOrders = orders.filter((o) => o.stage === 'done');
+  const totalRevenue = doneOrders.reduce((s, o) => s + o.price, 0);
   return {
     totalOrders: orders.length,
     todayOrders,
     totalRevenue,
     avgOrderPrice: orders.length ? Math.round(orders.reduce((s, o) => s + o.price, 0) / orders.length) : 0,
+  };
+}
+
+function authHeaders(user: string, pass: string): HeadersInit {
+  return { Authorization: 'Basic ' + btoa(`${user}:${pass}`) };
+}
+
+interface ApiOrderItem {
+  id: string;
+  status: string;
+  stage: string | null;
+  from_addr: string;
+  to_addr: string;
+  total: number;
+  name: string | null;
+  phone: string;
+  car_class: string;
+  car_class_label: string;
+  created_at: number;
+  trip_date: string;
+  trip_time: string;
+  comment: string;
+  driver_name: string | null;
+}
+
+function mapOrder(r: ApiOrderItem): AdminOrder {
+  return {
+    id: r.id,
+    from: r.from_addr,
+    to: r.to_addr,
+    price: r.total,
+    clientName: r.name || '',
+    clientPhone: r.phone,
+    carClass: r.car_class,
+    carClassLabel: r.car_class_label || r.car_class,
+    status: (r.stage || r.status || 'new') as OrderStatus,
+    stage: r.stage || r.status || 'new',
+    createdAt: new Date(r.created_at).toISOString(),
+    tripDate: r.trip_date,
+    tripTime: r.trip_time,
+    comment: r.comment || '',
+    driverName: r.driver_name,
   };
 }
 
@@ -74,9 +113,11 @@ interface AdminState {
   tariffs: TariffConfig[];
   stats: DashboardStats;
   settings: AdminSettings;
+  loading: boolean;
+  error: string | null;
   setSubTab: (tab: AdminSubTab) => void;
   fetchOrders: () => Promise<void>;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  updateOrderStatus: (orderId: string, status: string) => Promise<void>;
   fetchTariffs: () => Promise<void>;
   updateTariff: (tariffId: string, pricePerKm: number) => void;
   toggleTariff: (tariffId: string) => void;
@@ -84,55 +125,83 @@ interface AdminState {
   updateSettings: (s: Partial<AdminSettings>) => void;
 }
 
-export const useAdminStore = create<AdminState>((set, get) => ({
-  activeSubTab: 'dashboard',
-  orders: MOCK_ORDERS,
-  tariffs: MOCK_TARIFFS,
-  stats: computeStats(MOCK_ORDERS),
-  settings: { botToken: '', webhookUrl: `${API_BASE}/order` },
+export const useAdminStore = create<AdminState>()(
+  persist(
+    (set, get) => ({
+      activeSubTab: 'dashboard',
+      orders: [],
+      tariffs: TARIFFS,
+      stats: computeStats([]),
+      settings: { adminUser: '', adminPass: '', webhookUrl: `${API_BASE}/order` },
+      loading: false,
+      error: null,
 
-  setSubTab: (tab) => set({ activeSubTab: tab }),
+      setSubTab: (tab) => set({ activeSubTab: tab }),
 
-  fetchOrders: async () => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/orders`);
-      if (!res.ok) throw new Error('API error');
-      const data: AdminOrder[] = await res.json();
-      set({ orders: data, stats: computeStats(data) });
-    } catch {
-      // Use mock data already in state
-    }
-  },
+      fetchOrders: async () => {
+        const { settings } = get();
+        if (!settings.adminUser || !settings.adminPass) {
+          set({ error: 'Укажите логин и пароль в настройках' });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const res = await fetch(`${API_BASE}/admin/api/orders?period=all&limit=500`, {
+            headers: authHeaders(settings.adminUser, settings.adminPass),
+          });
+          if (res.status === 401) {
+            set({ loading: false, error: 'Неверный логин или пароль' });
+            return;
+          }
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const json = await res.json();
+          const orders = (json.items || []).map(mapOrder);
+          set({ orders, stats: computeStats(orders), loading: false });
+        } catch (e) {
+          set({ loading: false, error: `Ошибка загрузки: ${(e as Error).message}` });
+        }
+      },
 
-  updateOrderStatus: (orderId, status) => {
-    const orders = get().orders.map((o) => (o.id === orderId ? { ...o, status } : o));
-    set({ orders, stats: computeStats(orders) });
-  },
+      updateOrderStatus: async (orderId, status) => {
+        const { settings } = get();
+        try {
+          await fetch(`${API_BASE}/admin/api/orders/${orderId}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeaders(settings.adminUser, settings.adminPass) },
+            body: JSON.stringify({ status }),
+          });
+        } catch {
+          // Update locally even if API fails
+        }
+        const orders = get().orders.map((o) =>
+          o.id === orderId ? { ...o, status: status as OrderStatus, stage: status } : o,
+        );
+        set({ orders, stats: computeStats(orders) });
+      },
 
-  fetchTariffs: async () => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/tariffs`);
-      if (!res.ok) throw new Error('API error');
-      const data: TariffConfig[] = await res.json();
-      set({ tariffs: data });
-    } catch {
-      // Use mock data already in state
-    }
-  },
+      fetchTariffs: async () => {
+        // Tariffs are hardcoded on backend (getRate function), no API endpoint
+      },
 
-  updateTariff: (tariffId, pricePerKm) => {
-    set({ tariffs: get().tariffs.map((t) => (t.id === tariffId ? { ...t, pricePerKm } : t)) });
-  },
+      updateTariff: (tariffId, pricePerKm) => {
+        set({ tariffs: get().tariffs.map((t) => (t.id === tariffId ? { ...t, pricePerKm } : t)) });
+      },
 
-  toggleTariff: (tariffId) => {
-    set({ tariffs: get().tariffs.map((t) => (t.id === tariffId ? { ...t, enabled: !t.enabled } : t)) });
-  },
+      toggleTariff: (tariffId) => {
+        set({ tariffs: get().tariffs.map((t) => (t.id === tariffId ? { ...t, enabled: !t.enabled } : t)) });
+      },
 
-  fetchStats: () => {
-    set({ stats: computeStats(get().orders) });
-  },
+      fetchStats: () => {
+        set({ stats: computeStats(get().orders) });
+      },
 
-  updateSettings: (s) => {
-    set({ settings: { ...get().settings, ...s } });
-  },
-}));
+      updateSettings: (s) => {
+        set({ settings: { ...get().settings, ...s } });
+      },
+    }),
+    {
+      name: 'admin-settings',
+      partialize: (state) => ({ settings: state.settings }),
+    },
+  ),
+);
