@@ -8,6 +8,7 @@ import { OrderPage } from '@/pages/OrderPage';
 import { TripsPage } from '@/pages/TripsPage';
 import { LoyaltyPage } from '@/pages/LoyaltyPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { AdminPage } from '@/pages/AdminPage';
 
 const PAGES = {
   home: HomePage,
@@ -15,6 +16,7 @@ const PAGES = {
   trips: TripsPage,
   loyalty: LoyaltyPage,
   profile: ProfilePage,
+  admin: AdminPage,
 } as const;
 
 export function Layout() {

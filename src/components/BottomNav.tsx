@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { useNavStore, type TabId } from '@/store/navStore';
+import { useUserStore } from '@/store/userStore';
+import { isAdminUser } from '@/lib/adminAuth';
 import { hapticFeedback } from '@tma.js/sdk-react';
-import { Home, MapPin, Clock, Star, User } from 'lucide-react';
+import { Home, MapPin, Clock, Star, User, Shield } from 'lucide-react';
 
-const tabs: { id: TabId; label: string; Icon: typeof Home }[] = [
+const baseTabs: { id: TabId; label: string; Icon: typeof Home }[] = [
   { id: 'home', label: 'Главная', Icon: Home },
   { id: 'order', label: 'Заказать', Icon: MapPin },
   { id: 'trips', label: 'Поездки', Icon: Clock },
@@ -10,8 +13,22 @@ const tabs: { id: TabId; label: string; Icon: typeof Home }[] = [
   { id: 'profile', label: 'Профиль', Icon: User },
 ];
 
+const adminTab: { id: TabId; label: string; Icon: typeof Home } = {
+  id: 'admin', label: 'Админ', Icon: Shield,
+};
+
 export function BottomNav() {
   const { activeTab, setActiveTab } = useNavStore();
+  const tgUser = useUserStore((s) => s.tgUser);
+  const showAdmin = isAdminUser(tgUser?.id ?? null);
+
+  const tabs = useMemo(
+    () => (showAdmin ? [...baseTabs, adminTab] : baseTabs),
+    [showAdmin],
+  );
+
+  const iconSize = tabs.length > 5 ? 19 : 21;
+  const textSize = tabs.length > 5 ? '9px' : '10px';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-pb">
@@ -41,15 +58,15 @@ export function BottomNav() {
                 } : {}}
               >
                 <Icon
-                  size={21}
+                  size={iconSize}
                   strokeWidth={isActive ? 2.4 : 1.6}
                   style={{ color: isActive ? '#d4a853' : '#525252' }}
                   className="transition-colors duration-200"
                 />
               </span>
               <span
-                className="text-[10px] font-semibold transition-colors duration-200"
-                style={{ color: isActive ? '#d4a853' : '#525252' }}
+                className="font-semibold transition-colors duration-200"
+                style={{ color: isActive ? '#d4a853' : '#525252', fontSize: textSize }}
               >
                 {label}
               </span>

@@ -167,3 +167,7 @@ input, select, textarea {
 /* Text helpers */
 .text-glow { text-shadow: none; }
 .text-glow-pink { text-shadow: none; }
+
+/* Hide scrollbar for pill-bar horizontal scroll */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
