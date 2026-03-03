@@ -19,12 +19,15 @@ import {
   Loader2,
   RefreshCw,
   AlertCircle,
+  Gift,
 } from 'lucide-react';
+import { useReferralStore } from '@/store/referralStore';
 
 const SUB_TABS: { id: AdminSubTab; label: string; Icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Обзор', Icon: LayoutDashboard },
   { id: 'orders', label: 'Заказы', Icon: ClipboardList },
   { id: 'tariffs', label: 'Тарифы', Icon: Sliders },
+  { id: 'bonuses', label: 'Бонусы', Icon: Gift },
   { id: 'settings', label: 'Настройки', Icon: Settings },
 ];
 
@@ -392,6 +395,64 @@ function TariffsTab() {
   );
 }
 
+/* ─── Bonuses ─── */
+function BonusesTab() {
+  const { bonusPoints, addBonusPoints } = useReferralStore();
+  const [points, setPoints] = useState('');
+  const [done, setDone] = useState(false);
+
+  function handleAdd() {
+    const val = parseInt(points, 10);
+    if (isNaN(val) || val === 0) return;
+    addBonusPoints(val);
+    setPoints('');
+    setDone(true);
+    setTimeout(() => setDone(false), 2000);
+  }
+
+  return (
+    <div className="step-enter space-y-4">
+      <div className="card-solid p-4">
+        <div className="text-xs text-neutral-400 mb-1">Текущий баланс клиента (это устройство)</div>
+        <div className="text-2xl font-bold text-white">{bonusPoints.toLocaleString('ru-RU')} баллов</div>
+      </div>
+
+      <div className="card-solid p-4 space-y-3">
+        <div className="text-sm font-semibold text-white">Начислить / списать баллы</div>
+        <div className="text-xs text-neutral-500">Положительное число — начислить, отрицательное — списать</div>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={points}
+            onChange={(e) => setPoints(e.target.value)}
+            placeholder="500"
+            className="input !py-2.5 flex-1 text-sm"
+            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+          />
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!points || parseInt(points, 10) === 0}
+            className="btn-primary px-4 py-2.5 text-sm shrink-0"
+          >
+            {done ? <CheckCircle2 size={16} /> : 'Применить'}
+          </button>
+        </div>
+        {done && <div className="text-xs text-green-400">Баллы обновлены</div>}
+      </div>
+
+      <div className="card-solid p-4 space-y-2">
+        <div className="text-xs text-neutral-400">Информация</div>
+        <div className="text-xs text-neutral-500">
+          Бонусы хранятся локально на устройстве клиента в localStorage.
+          Начисление через эту панель изменяет баланс текущего устройства.
+          Для удалённого начисления конкретному пользователю необходима серверная база бонусов.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Settings ─── */
 function SettingsTab() {
   const { settings, updateSettings, fetchOrders } = useAdminStore();
@@ -474,6 +535,7 @@ export function AdminPage() {
     dashboard: DashboardTab,
     orders: OrdersTab,
     tariffs: TariffsTab,
+    bonuses: BonusesTab,
     settings: SettingsTab,
   };
 

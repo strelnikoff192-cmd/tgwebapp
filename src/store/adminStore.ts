@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type AdminSubTab = 'dashboard' | 'orders' | 'tariffs' | 'settings';
+export type AdminSubTab = 'dashboard' | 'orders' | 'tariffs' | 'bonuses' | 'settings';
 
 export type OrderStatus = 'new' | 'accepted' | 'assigned' | 'in_progress' | 'done' | 'canceled';
 

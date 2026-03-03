@@ -9,11 +9,12 @@ interface ReferralTier {
   label: string;
 }
 
+export const MAX_DISCOUNT = 7;
+
 export const REFERRAL_TIERS: ReferralTier[] = [
-  { friends: 1, discount: 5, label: 'Первый друг' },
-  { friends: 3, discount: 10, label: '3 друга' },
-  { friends: 5, discount: 15, label: '5 друзей' },
-  { friends: 10, discount: 20, label: '10 друзей' },
+  { friends: 1, discount: 3, label: 'Первый друг' },
+  { friends: 3, discount: 5, label: '3 друга' },
+  { friends: 5, discount: 7, label: '5 друзей' },
 ];
 
 interface ReferralState {
@@ -27,6 +28,7 @@ interface ReferralState {
   getCurrentDiscount: () => number;
   getFirstRideDiscount: () => number;
   addInvitedFriend: () => void;
+  addBonusPoints: (points: number) => void;
 }
 
 const LS_KEY = 'globus_referral';
@@ -84,11 +86,11 @@ export const useReferralStore = create<ReferralState>((set, get) => {
       for (const tier of REFERRAL_TIERS) {
         if (invitedFriends >= tier.friends) discount = tier.discount;
       }
-      return discount;
+      return Math.min(discount, MAX_DISCOUNT);
     },
 
     getFirstRideDiscount: () => {
-      return get().referredBy && get().isFirstRide ? 15 : 0;
+      return get().referredBy && get().isFirstRide ? MAX_DISCOUNT : 0;
     },
 
     addInvitedFriend: () => {
@@ -96,6 +98,19 @@ export const useReferralStore = create<ReferralState>((set, get) => {
         const newState = {
           invitedFriends: s.invitedFriends + 1,
           bonusPoints: s.bonusPoints + 500,
+          isFirstRide: s.isFirstRide,
+          referredBy: s.referredBy,
+        };
+        saveToStorage(newState);
+        return newState;
+      });
+    },
+
+    addBonusPoints: (points) => {
+      set((s) => {
+        const newState = {
+          invitedFriends: s.invitedFriends,
+          bonusPoints: s.bonusPoints + points,
           isFirstRide: s.isFirstRide,
           referredBy: s.referredBy,
         };

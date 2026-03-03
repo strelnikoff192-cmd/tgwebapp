@@ -2,7 +2,7 @@ import { Star, Copy, Share2, Users, Trophy, Gift } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { hapticFeedback } from '@tma.js/sdk-react';
 import { UserCard } from '@/components/UserCard';
-import { useReferralStore, REFERRAL_TIERS } from '@/store/referralStore';
+import { useReferralStore, REFERRAL_TIERS, MAX_DISCOUNT } from '@/store/referralStore';
 import { useUserStore } from '@/store/userStore';
 
 const LEVELS = [
@@ -39,7 +39,7 @@ export function LoyaltyPage() {
 
   const shareViaTelegram = useCallback(() => {
     if (!referralLink) return;
-    const text = encodeURIComponent(`Присоединяйся к Глобус Такси! Скидка 15% на первую поездку: ${referralLink}`);
+    const text = encodeURIComponent(`Присоединяйся к Глобус Такси! Скидка ${MAX_DISCOUNT}% на первую поездку: ${referralLink}`);
     window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${text}`, '_blank');
   }, [referralLink]);
 
@@ -144,7 +144,7 @@ export function LoyaltyPage() {
             {copied ? 'Скопировано!' : 'Скопировать ссылку'}
           </button>
           <p className="text-center text-xs" style={{ color: '#525252' }}>
-            Друг получит -15% на первую поездку, вы — 500 баллов
+            Друг получит -{MAX_DISCOUNT}% на первую поездку, вы — 500 баллов
           </p>
         </div>
       )}

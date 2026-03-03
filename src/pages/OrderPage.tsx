@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 import { loadYandexMaps, hasYandexMapsKey } from '@/lib/yandexMaps';
-import { useReferralStore } from '@/store/referralStore';
+import { useReferralStore, MAX_DISCOUNT } from '@/store/referralStore';
 import { useTripsStore } from '@/store/tripsStore';
 
 const STEPS = [
@@ -86,7 +86,7 @@ export function OrderPage() {
   const tariff = TARIFFS.find((t) => t.id === selectedTariff)!;
   const referralDiscount = useReferralStore((s) => s.getCurrentDiscount());
   const firstRideDiscount = useReferralStore((s) => s.getFirstRideDiscount());
-  const totalDiscount = Math.max(referralDiscount, firstRideDiscount);
+  const totalDiscount = Math.min(Math.max(referralDiscount, firstRideDiscount), MAX_DISCOUNT);
 
   const rawPrice =
     distanceKm != null && distanceKm > 0 ? Math.round(distanceKm * tariff.pricePerKm) : null;
